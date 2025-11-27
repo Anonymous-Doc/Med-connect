@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Med-Connect 4 (Mega Question Bank)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    gridTemplateColumns: {
+                        '10': 'repeat(10, minmax(0, 1fr))',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        @keyframes bounce-in {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        .animate-bounce-in {
+            animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 transition-colors duration-300 h-screen flex overflow-hidden selection:bg-blue-200 dark:selection:bg-blue-900">
+
+    <!-- LEFT SIDE: GAME AREA -->
+    <div class="flex-1 flex flex-col relative h-full overflow-y-auto overflow-x-hidden">
+        
+        <!-- Top Bar -->
+        <div class="p-4 flex justify-between items-center bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm sticky top-0 z-30 border-b border-slate-200 dark:border-slate-700">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-600 rounded-lg text-white shadow-lg">
+                    <i data-lucide="library" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100">
+                        Med-Connect Ultimate
+                    </h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-xs font-medium hidden sm:block">Medical Quiz Strategy Game</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="showSetupModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-md font-semibold text-sm">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">New Game</span>
+                </button>
+                <button onclick="toggleHistoryMobile()" class="lg:hidden p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                </button>
+                <button onclick="toggleDarkMode()" class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all">
+                    <i data-lucide="sun" id="sun-icon" class="hidden"></i>
+                    <i data-lucide="moon" id="moon-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col items-center justify-center p-2 sm:p-6 gap-4">
+            
+            <!-- Players Bar -->
+            <div class="w-full max-w-4xl overflow-x-auto no-scrollbar pb-2">
+                <div id="players-bar" class="flex items-center justify-center gap-3 min-w-max px-2">
+                    <!-- Player indicators injected by JS -->
+                </div>
+            </div>
+
+            <!-- Game Board Container -->
+            <div class="relative w-full max-w-fit mx-auto">
+                <!-- Column Numbers -->
+                <div class="grid grid-cols-10 mb-1 px-2 text-center">
+                    <script>
+                        for(let i=1; i<=10; i++) {
+                            document.write(`<div class="text-slate-400 dark:text-slate-500 font-bold text-[10px] sm:text-xs">${i}</div>`);
+                        }
+                    </script>
+                </div>
+
+                <!-- The Grid -->
+                <div class="bg-blue-600 dark:bg-blue-800 p-1.5 sm:p-2.5 rounded-xl shadow-2xl border-4 border-blue-700 dark:border-blue-900">
+                    <div id="game-board" class="grid grid-cols-10 gap-1 sm:gap-1.5"></div>
+                    <!-- Click Layer -->
+                    <div id="click-layer" class="absolute inset-0 z-10 grid grid-cols-10 gap-1 sm:gap-1.5 p-1.5 sm:p-2.5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE: HISTORY SIDEBAR (Desktop) -->
+    <div id="history-sidebar" class="hidden lg:flex flex-col w-80 h-full bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 shadow-xl z-20 transition-transform">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+            <h2 class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <i data-lucide="history" class="w-5 h-5 text-blue-500"></i>
+                Question History
+            </h2>
+        </div>
+        <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <p class="text-center text-slate-400 text-sm mt-10 italic" id="empty-history-msg">No questions answered yet.</p>
+            <!-- History items injected here -->
+        </div>
+    </div>
+
+    <!-- MOBILE HISTORY DRAWER (Overlay) -->
+    <div id="mobile-history-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleHistoryMobile()"></div>
+    <div id="mobile-history-drawer" class="fixed inset-y-0 right-0 w-80 bg-white dark:bg-slate-800 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 lg:hidden flex flex-col">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+            <h2 class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <i data-lucide="history" class="w-5 h-5 text-blue-500"></i>
+                History
+            </h2>
+            <button onclick="toggleHistoryMobile()" class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div id="mobile-history-list" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <p class="text-center text-slate-400 text-sm mt-10 italic" id="mobile-empty-history-msg">No questions answered yet.</p>
+        </div>
+    </div>
+
+    <!-- --- MODALS --- -->
+
+    <!-- Setup Modal (New) -->
+    <div id="setup-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-8 text-center relative overflow-hidden border-4 border-blue-500/30">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+            
+            <div class="mb-6">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <i data-lucide="users" class="w-8 h-8 text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mb-2">Game Setup</h2>
+                <p class="text-slate-500 dark:text-slate-400">How many teams are playing today?</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <button onclick="startWithPlayers(2)" class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
+                    <span class="text-2xl font-bold text-slate-700 dark:text-slate-200 group-hover:text-blue-600 block mb-1">2</span>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Teams</span>
+                </button>
+                <button onclick="startWithPlayers(3)" class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
+                    <span class="text-2xl font-bold text-slate-700 dark:text-slate-200 group-hover:text-blue-600 block mb-1">3</span>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Teams</span>
+                </button>
+                <button onclick="startWithPlayers(4)" class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
+                    <span class="text-2xl font-bold text-slate-700 dark:text-slate-200 group-hover:text-blue-600 block mb-1">4</span>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Teams</span>
+                </button>
+                <button onclick="startWithPlayers(5)" class="p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
+                    <span class="text-2xl font-bold text-slate-700 dark:text-slate-200 group-hover:text-blue-600 block mb-1">5</span>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Teams</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div id="question-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[85vh]" id="question-content">
+            <div id="question-header" class="p-4 text-white text-center font-bold text-lg shadow-md relative z-10">
+                <!-- Dynamic Header -->
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <h3 id="question-text" class="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100 text-center mb-6 leading-relaxed">
+                    <!-- Question -->
+                </h3>
+                <div id="options-container" class="grid gap-3">
+                    <!-- Options -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 p-6 text-center relative">
+            <div class="flex justify-center mb-4">
+                <div id="feedback-icon-container"></div>
+            </div>
+            <h2 id="feedback-title" class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mb-2"></h2>
+            <p id="feedback-msg" class="text-slate-600 dark:text-slate-300 text-base mb-6 font-medium"></p>
+
+            <div id="correction-box" class="hidden w-full mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl text-left shadow-inner">
+                <div class="flex items-center gap-2 mb-2 text-red-800 dark:text-red-300 font-bold text-xs uppercase tracking-wider">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    Correct Answer
+                </div>
+                <p id="correction-text" class="text-red-900 dark:text-red-100 font-bold text-sm md:text-base leading-snug"></p>
+            </div>
+
+            <button onclick="closeFeedback()" class="w-full px-6 py-3 bg-slate-800 dark:bg-slate-700 text-white rounded-xl font-bold hover:bg-slate-700 dark:hover:bg-slate-600 transition-all shadow-lg focus:outline-none focus:ring-4 focus:ring-slate-500/30">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- Winner Modal -->
+    <div id="winner-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden p-8 text-center animate-bounce-in relative border-4 border-yellow-400/50">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500"></div>
+            <div class="flex justify-center mb-6 relative">
+                <div class="absolute inset-0 bg-yellow-400/20 blur-xl rounded-full animate-pulse"></div>
+                <i data-lucide="trophy" class="w-24 h-24 text-yellow-500 drop-shadow-lg relative z-10"></i>
+            </div>
+            <h2 class="text-4xl font-extrabold text-slate-800 dark:text-slate-100 mb-2 tracking-tight">Winner!</h2>
+            <p id="winner-msg" class="text-xl font-medium text-slate-600 dark:text-slate-300 mb-8"></p>
+            <button onclick="showSetupModal()" class="w-full px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                Play Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const ROWS = 10;
+        const COLS = 10;
+        const PLAYERS_CONFIG = [
+            { id: 1, name: "Red Team", colorClass: "bg-red-500", ringClass: "ring-red-500", bgLight: "bg-red-100", bgDark: "dark:bg-red-900/40", textLight: "text-red-700", textDark: "dark:text-red-300", shadow: "shadow-[0_0_10px_rgba(239,68,68,0.6)]" },
+            { id: 2, name: "Yellow Team", colorClass: "bg-yellow-400", ringClass: "ring-yellow-400", bgLight: "bg-yellow-100", bgDark: "dark:bg-yellow-900/40", textLight: "text-yellow-700", textDark: "dark:text-yellow-300", shadow: "shadow-[0_0_10px_rgba(250,204,21,0.6)]" },
+            { id: 3, name: "Green Team", colorClass: "bg-green-500", ringClass: "ring-green-500", bgLight: "bg-green-100", bgDark: "dark:bg-green-900/40", textLight: "text-green-700", textDark: "dark:text-green-300", shadow: "shadow-[0_0_10px_rgba(34,197,94,0.6)]" },
+            { id: 4, name: "Purple Team", colorClass: "bg-purple-500", ringClass: "ring-purple-500", bgLight: "bg-purple-100", bgDark: "dark:bg-purple-900/40", textLight: "text-purple-700", textDark: "dark:text-purple-300", shadow: "shadow-[0_0_10px_rgba(168,85,247,0.6)]" },
+            { id: 5, name: "Orange Team", colorClass: "bg-orange-500", ringClass: "ring-orange-500", bgLight: "bg-orange-100", bgDark: "dark:bg-orange-900/40", textLight: "text-orange-700", textDark: "dark:text-orange-300", shadow: "shadow-[0_0_10px_rgba(249,115,22,0.6)]" }
+        ];
+
+        // --- MASSIVE DATABASE (Full Question Bank) ---
+        const ORIGINAL_QUESTIONS_DB = [
+            // CARDIOLOGY
+            { q: "Sudden onset of palpitations, shortness of breath and coughing of scanty amount of frothy pink sputum in RHD patient. Irregular pulse. Diagnosis?", options: ["Congestive heart failure", "Cardiac asthma", "Infective endocarditis", "Pneumonia"], correct: 0 },
+            { q: "45-year-old man, BP 160/100, LVH on Echo. Father has HTN. Most appropriate step?", options: ["Advise salt restriction only", "Wait for further readings", "Start immediate management", "Office hypertension"], correct: 2 },
+            { q: "Exertional chest pain, dyspnea, syncope. Ejection systolic murmur at upper right sternal border radiating to carotids. Diagnosis?", options: ["Aortic stenosis", "Mitral regurge", "Pulmonary embolism", "Pulmonary stenosis"], correct: 0 },
+            { q: "15-year-old, sore throat 2 weeks ago, fleeting joint pain. Pansystolic murmur at apex radiating to axilla. Diagnosis?", options: ["Post streptococcal glomerulonephritis", "Reactive arthritis", "Rheumatic fever", "Still's disease"], correct: 2 },
+            { q: "Sudden severe tearing chest pain radiating to back. Unequal pulses. Diagnosis?", options: ["Aortic dissection", "Hypertensive urgency", "Pneumothorax", "Silent MI"], correct: 0 },
+            { q: "Irregularly irregular pulse, absent P waves. Cause?", options: ["Atrial fibrillation", "Sinus tachycardia", "PVCs", "SVT"], correct: 0 },
+            { q: "Atrial natriuretic peptide:", options: ["Increases aldosterone", "Increases renin", "Opposes Angiotensin II", "Reduces GFR"], correct: 2 },
+            { q: "Raised JVP, lung crackles, pitting edema, tender hepatomegaly. Diagnosis?", options: ["Pulmonary embolism", "Congestive heart failure", "Chronic bronchitis", "Left sided heart failure"], correct: 1 },
+            { q: "Patient with CHF seeing 'yellow halos around lights'. Drug cause?", options: ["Digoxin", "Enalapril", "Thiazide", "Aspirin"], correct: 0 },
+            { q: "Chest pain relieved by rest. ECG normal. Next step?", options: ["Ambulatory ECG", "Echocardiography", "Myocardial perfusion scintigraphy", "Cardiac enzymes"], correct: 2 },
+            { q: "A criteria in rheumatic fever:", options: ["Erythema nodosum", "Palmar erythema", "Erythema multiform", "Erythema marginatum"], correct: 3 },
+            { q: "Mitral stenosis:", options: ["Well tolerated in pregnancy", "Caused by rheumatic fever", "Usually congenital", "Causes LV failure"], correct: 1 },
+            { q: "Cause of acute severe aortic regurge?", options: ["Aortic dissection", "Bicuspid valve", "Chest wall tumor", "RHD"], correct: 0 },
+            { q: "Drug to avoid in dilated cardiomyopathy?", options: ["Beta blockers", "Calcium channel blockers", "Digitalis", "Spironolactone"], correct: 1 },
+            { q: "Drug to add for dilated cardiomyopathy prognosis?", options: ["Carvedilol", "Lanoxin", "Sildenafil", "Verapamil"], correct: 0 },
+            { q: "Asymptomatic calcific aortic stenosis, gradient 27mmHg. Management?", options: ["Anticoagulation", "Follow-up", "Beta blocker", "Valve replacement"], correct: 1 },
+            { q: "SVT treatment in ER?", options: ["DC Cardioversion", "Lidocaine", "Carotid massage", "Adenosine"], correct: 3 },
+            { q: "Fever, pallor, clubbing, vegetations after tooth extraction. Organism?", options: ["Candida", "Staph aureus", "Staph epidermidis", "Strep viridans"], correct: 3 },
+            { q: "Inferior MI followed by bradycardia and hypotension. Management?", options: ["Permanent pacemaker", "Dopamine", "Temporary pacemaker", "Monitor"], correct: 1 },
+            { q: "Hypertensive emergency (BP 230/140) with papilledema. Treatment?", options: ["Bisoprolol", "Sodium nitroprusside", "Nifedipine", "Furosemide"], correct: 1 },
+            { q: "Manifestation of Left Sided Heart Failure:", options: ["Ankle edema", "Orthopnea", "Congested pulsating neck veins", "Ascites"], correct: 1 },
+            { q: "Drug for rapid relief of acute angina?", options: ["Paracetamol", "Sublingual nitroglycerin", "Verapamil", "Bisoprolol"], correct: 1 },
+            { q: "Systolic expansion of neck veins seen in:", options: ["Mitral incompetence", "Tricuspid incompetence", "Tricuspid stenosis", "Aortic incompetence"], correct: 1 },
+            { q: "Pregnancy-associated hypertension treatment:", options: ["Valsartan", "Alpha-methyldopa", "Captopril", "Lisinopril"], correct: 1 },
+            { q: "Condition associated with central cyanosis:", options: ["Aortic regurgitation", "ASD", "Eisenmenger syndrome", "Cold weather"], correct: 2 },
+            { q: "Pulsus alternans is a sign of:", options: ["Pericardial effusion", "Left ventricular failure", "COPD", "PE"], correct: 1 },
+            { q: "Major criteria of rheumatic fever:", options: ["Carditis", "Small joint arthritis", "Fever", "Erythema nodosum"], correct: 0 },
+            { q: "Friction rub in renal failure patient. Cause?", options: ["Pleurisy", "Aortic dissection", "Pericardial friction rub", "Reflux"], correct: 2 },
+            { q: "Dyspnea, bibasilar crackles, S3. Diagnosis?", options: ["RV failure", "Pulmonary HTN", "LV failure", "Tricuspid stenosis"], correct: 2 },
+            { q: "NOT a feature of infective endocarditis?", options: ["Cherry red macula", "Janeway lesions", "Roth's spots", "Osler nodes"], correct: 0 },
+            { q: "Cause of sinus bradycardia:", options: ["Fever", "Thyrotoxicosis", "Exercise", "Beta-blockers"], correct: 3 },
+            { q: "Secondary hypertension cause:", options: ["Renal artery stenosis", "Addison's", "Myxedema", "Viral hepatitis"], correct: 0 },
+            { q: "Cannon wave in neck vein seen in:", options: ["Complete heart block", "Constrictive pericarditis", "Tricuspid incompetence", "Pulmonary HTN"], correct: 0 },
+            { q: "Reversed splitting of S2 found in:", options: ["Pulmonary HTN", "RBBB", "Mitral stenosis", "LBBB"], correct: 3 },
+            { q: "Investigation for acute pulmonary thromboembolism:", options: ["ECG", "CBC", "Serum electrolytes", "CT Pulmonary Angiography"], correct: 3 },
+            { q: "First enzyme to rise in MI?", options: ["SGPT", "Amylase", "CPK-MB/Troponin", "GGT"], correct: 2 },
+            { q: "Wide fixed splitting of S2:", options: ["ASD", "Aortic stenosis", "Pericarditis", "Atrial flutter"], correct: 0 },
+            { q: "Pulsus paradoxus occurs in:", options: ["Severe heart failure", "MI", "Constrictive pericarditis", "Aortic stenosis"], correct: 2 },
+            { q: "Austin Flint murmur associated with:", options: ["Severe Aortic Regurgitation", "Mitral Stenosis", "Pulmonary Stenosis", "Tricuspid Regurge"], correct: 0 },
+            { q: "Carey Coomb's murmur is associated with:", options: ["Rheumatoid arthritis", "Rheumatic fever", "Infective endocarditis", "MVP"], correct: 1 },
+            { q: "Murmur that increases on inspiration:", options: ["Mitral valve", "Aortic valve", "Tricuspid valve", "VSD"], correct: 2 },
+            { q: "Opening snap is a feature of:", options: ["Mitral stenosis", "Aortic stenosis", "Pulmonary stenosis", "Tricuspid regurge"], correct: 0 },
+            { q: "Continuous machinery murmur:", options: ["ASD", "VSD", "PDA", "Tetralogy of Fallot"], correct: 2 },
+            { q: "Most common cause of acute cor pulmonale:", options: ["Pulmonary thromboembolism", "Bronchial adenoma", "Lobar consolidation", "COPD"], correct: 0 },
+            
+            // CHEST
+            { q: "COPD patient with purulent sputum. Management?", options: ["CPAP", "Nebulized Salbutamol/Ipratropium + Antibiotic", "IPPV", "Steroids only"], correct: 1 },
+            { q: "Smoker, weight loss, hoarseness, blood streaked sputum. Diagnosis?", options: ["Acute pneumonia", "Bronchiectasis", "Bronchial carcinoma", "Chronic bronchitis"], correct: 2 },
+            { q: "Burning chest pain with vesicular dermatomal rash. Diagnosis?", options: ["Herpes simplex", "Chicken pox", "Varicella zoster (Shingles)", "Urticaria"], correct: 2 },
+            { q: "Pneumonia signs: Fever, rigors, rusty sputum, dullness. Diagnosis?", options: ["Pleural effusion", "Lobar pneumonia", "Pulmonary fibrosis", "Apical tumor"], correct: 1 },
+            { q: "Smoker with Ptosis, Miosis (Horner's). Diagnosis step?", options: ["CT Chest", "CT Orbit", "MRI Head", "Sputum culture"], correct: 0 },
+            { q: "Sudden dyspnea, hemoptysis, chest pain, history of DVT. Diagnosis?", options: ["Pulmonary embolism", "MI", "Asthma", "Hypertension"], correct: 0 },
+            { q: "Farmer, fever/rigors hours after work, mottling on CXR. Diagnosis?", options: ["Asthma", "Fibrosing alveolitis", "Extrinsic allergic alveolitis", "Sarcoidosis"], correct: 2 },
+            { q: "Indication for hospital admission in pneumonia (CURB-65):", options: ["Temp 38", "Resp rate > 30/min", "O2 sat 95%", "WBC 13"], correct: 1 },
+            { q: "COPD exacerbation with pH 7.14, pCO2 78 (Acidosis). Management?", options: ["Reduce O2", "Doxapram", "Increase O2", "Intubation/Ventilation"], correct: 3 },
+            { q: "Severe dyspnea after subclavian line, tracheal shift. Management?", options: ["Intubation", "Needle thoracotomy", "Nebulizers", "Remove catheter"], correct: 1 },
+            { q: "Post-op hip surgery, pleuritic pain, dyspnea. PE confirmed. Management?", options: ["Streptokinase", "IVC filter", "Anticoagulation (Heparin)", "Embolectomy"], correct: 2 },
+            { q: "Asthma waking patient at night >3 times/week. Add?", options: ["LABA", "Inhaled steroid", "Theophylline", "Oral prednisone"], correct: 1 },
+            { q: "Transudative pleural effusion feature:", options: ["Albumin ratio > 0.5", "Protein ratio < 0.5", "Protein ratio > 0.5", "LDH ratio > 0.6"], correct: 1 },
+            { q: "Trachea NOT shifted in:", options: ["Tension pneumothorax", "Massive effusion", "Large goiter", "Pneumonia (Consolidation)"], correct: 3 },
+            { q: "Commonest cause of community acquired pneumonia:", options: ["Staph aureus", "Klebsiella", "Strep pneumoniae", "Moraxella"], correct: 2 },
+            { q: "COPD function finding:", options: ["Decreased TLC", "Decreased FEV1/FVC ratio", "Increased FEV1/FVC", "Normal FEV1/FVC"], correct: 1 },
+            { q: "Does NOT cause clubbing:", options: ["Bronchiectasis", "Lung abscess", "Bronchogenic carcinoma", "Acute bronchitis"], correct: 3 },
+            { q: "Hemorrhagic pleural effusion cause:", options: ["Bronchogenic carcinoma", "Liver cirrhosis", "Hypothyroidism", "Nephrotic syndrome"], correct: 0 },
+            { q: "Cause of bronchial breath sounds:", options: ["Lung collapse (patent bronchus)", "COPD", "Asthma", "Acute bronchitis"], correct: 0 },
+            { q: "Hyper-resonance and absent breath sounds. Diagnosis?", options: ["Pneumonia", "Pleural effusion", "Pneumothorax", "PE"], correct: 2 },
+            { q: "Pneumonia not responding to antibiotics. Dense consolidation. Diagnosis?", options: ["Mycoplasma", "Pulmonary fibrosis", "Pulmonary eosinophilia", "Bronchioloalveolar Ca"], correct: 3 },
+            { q: "Progressive dyspnea in Rheumatoid Arthritis. Cause?", options: ["Asthma", "Fibrosing alveolitis", "Eosinophilia", "COPD"], correct: 1 },
+            { q: "Currant-jelly sputum organism:", options: ["Strep pneumo", "H. influenzae", "Pseudomonas", "Klebsiella"], correct: 3 },
+            { q: "Bilateral hilar lymphadenopathy, high Ca. Diagnosis?", options: ["Coccidioidomycosis", "Hyperparathyroidism", "Hypervitaminosis D", "Sarcoidosis"], correct: 3 },
+            { q: "Pink frothy sputum seen in:", options: ["Pneumoconiosis", "Lobar pneumonia", "Acute pulmonary edema", "Bronchiectasis"], correct: 2 },
+            { q: "Pneumatocele is found in pneumonia caused by:", options: ["Staph aureus", "Strep pneumo", "Klebsiella", "Mycoplasma"], correct: 0 },
+            { q: "Restrictive lung disease feature:", options: ["Decreased VC", "Increased RV", "Increased TLC", "Obstructive pattern"], correct: 0 },
+            
+            // NEUROLOGY
+            { q: "Transient numbness/dysarthria resolving in minutes. Diagnosis?", options: ["Hypertensive encephalopathy", "Benign intracranial HTN", "Giant cell arteritis", "Transient ischemic attack (TIA)"], correct: 3 },
+            { q: "Resting tremors, rigidity, bradykinesia. Diagnosis?", options: ["Normal aging", "Parkinson's disease", "Demyelinating neuropathy", "Dementia"], correct: 1 },
+            { q: "Ascending weakness, areflexia, after diarrhea. High protein in CSF. Diagnosis?", options: ["Guillain-Barre syndrome", "Meningitis", "Multiple sclerosis", "SAH"], correct: 0 },
+            { q: "Sudden headache, loss of balance, vomiting. HTN. Diagnosis?", options: ["Hypertensive encephalopathy", "Intracerebral hemorrhage (Cerebellar)", "Meniere's", "PICA occlusion"], correct: 1 },
+            { q: "B12 deficiency neuro manifestation:", options: ["Dementia", "MND", "MS", "Subacute combined degeneration"], correct: 3 },
+            { q: "Bitemporal hemianopia cause:", options: ["Benign intracranial HTN", "Occipital tumor", "Pituitary neoplasm", "Temporal lesion"], correct: 2 },
+            { q: "UMN lesion sign:", options: ["Cogwheel rigidity", "Muscle wasting", "Normal electrical excitability", "Babinski sign"], correct: 3 },
+            { q: "Unilateral facial weakness with vesicles in ear (Ramsay Hunt). Diagnosis?", options: ["Bell's palsy", "GBS", "Horner's", "Herpes Zoster Oticus"], correct: 3 },
+            { q: "Diplopia evening, jaw weakness, ptosis. Diagnosis?", options: ["Ocular neuropathy", "Myasthenia gravis", "Ischemia", "Sclerosis"], correct: 1 },
+            { q: "Sudden severe headache, vomiting, confusion, HTN. Papilledema. Diagnosis?", options: ["Intracerebral hemorrhage", "Sinus thrombosis", "Subarachnoid hemorrhage", "Hypertensive encephalopathy"], correct: 0 },
+            { q: "Visual problem in pituitary tumor:", options: ["Bitemporal hemianopia", "Optic neuritis", "Papilledema", "Atrophy"], correct: 0 },
+            { q: "Headache triggered by stress, band-like. Diagnosis?", options: ["Tumor", "Migraine", "Cluster headache", "Tension headache"], correct: 3 },
+            { q: "Spastic paraparesis, sensory level, bladder issue. Diagnosis?", options: ["Anterior spinal artery", "GBS", "Botulism", "Transverse myelitis"], correct: 3 },
+            { q: "Tremor at rest, cogwheel rigidity. Diagnosis?", options: ["Parkinson's", "Alzheimer's", "Essential tremor", "Wilson's"], correct: 0 },
+            { q: "Meningitis: Fever, rigidity, rash. CSF: Neutrophils, G-ve diplococci. Organism?", options: ["H. influenzae", "Meningococcal", "Pneumococcal", "TB"], correct: 1 },
+            { q: "Not paralyzed in Bell's palsy:", options: ["Frontalis", "Orbicularis oculi", "Masseter (V nerve)", "Orbicularis oris"], correct: 2 },
+            { q: "Syringomyelia feature:", options: ["Stocking/glove loss", "Dissociated sensory loss (jacket)", "Loss below umbilicus", "Saddle anesthesia"], correct: 1 },
+            { q: "Crossed hemiplegia site:", options: ["Internal capsule", "Cortex", "Brainstem", "Spine"], correct: 2 },
+            { q: "Cerebellar lesion signs EXCEPT:", options: ["Nystagmus", "Hypertonia", "Staccato speech", "Dysdiadochokinesis"], correct: 1 },
+            { q: "Romberg sign positive in:", options: ["Parkinson", "Sensory ataxia", "Chorea", "Cerebellar"], correct: 1 },
+            { q: "Wernicke's encephalopathy deficiency:", options: ["B1 (Thiamine)", "B2", "B6", "B12"], correct: 0 },
+            { q: "Subarachnoid hemorrhage investigation:", options: ["CT scan", "Angiography", "EEG", "Ultrasound"], correct: 0 },
+            { q: "Earliest sensation lost in diabetes:", options: ["Pain", "Temperature", "Vibration", "Touch"], correct: 2 },
+            { q: "Inversion of Supinator jerk indicates lesion at:", options: ["C3,4", "C4,5", "C5,6", "C8/T1"], correct: 2 },
+            { q: "Bell's palsy is lesion of:", options: ["Geniculate ganglion", "Facial nerve in canal", "Cerebellopontine angle", "Medulla"], correct: 1 },
+            
+            // GIT & HEPATOLOGY
+            { q: "Obese female, RUQ discomfort, fatigue. High enzymes, neg viral. Bright liver. Diagnosis?", options: ["Acute hepatitis", "Autoimmune", "Hepatitis E", "NASH"], correct: 3 },
+            { q: "Confusion, flapping tremor, jaundice, coagulopathy. Diagnosis?", options: ["Acute fulminant hepatitis", "Chronic hepatitis", "Cirrhosis", "Hemorrhage"], correct: 0 },
+            { q: "Hematemesis, black stool, spider nevi. Diagnosis?", options: ["Esophageal varices", "Peptic ulcer", "Gastritis", "IBD"], correct: 0 },
+            { q: "Ascites, fever, tenderness. High WBC in fluid. Diagnosis?", options: ["Chronic hepatitis", "Metastasis", "Spontaneous bacterial peritonitis (SBP)", "TB"], correct: 2 },
+            { q: "HCV cirrhosis, hemorrhagic ascites. Next step?", options: ["Ultrasound", "LFTs", "Therapeutic tap", "Endoscopy"], correct: 0 },
+            { q: "Microcytic anemia, mass in RIF. Diagnosis?", options: ["Barium enema", "Sigmoidoscopy", "Colonoscopy", "Laparoscopy"], correct: 2 },
+            { q: "Bloody diarrhea, mucus, crampy pain, fever. Diagnosis?", options: ["Cancer colon", "Inflammatory bowel disease", "IBS", "Diverticular"], correct: 1 },
+            { q: "Weight loss, diarrhea, RIF pain. CT: bowel thickening, LN. Diagnosis?", options: ["Gastroenteritis", "Cholecystitis", "Hemolytic anemia", "Tuberculous enteritis/Crohn's"], correct: 3 },
+            { q: "SBP diagnosis neutrophil count:", options: [">250", ">500", ">100", "<50"], correct: 0 },
+            { q: "Severe epigastric pain to back. Alcoholic. Diagnosis?", options: ["ECG", "Xray", "Serum Amylase", "CBC"], correct: 2 },
+            { q: "Pruritus, jaundice, pigmentation, high ALP, AMA positive. Diagnosis?", options: ["Malignant ascites", "Obstructive jaundice", "Viral hepatitis", "Primary Biliary Cirrhosis"], correct: 3 },
+            { q: "Painless jaundice, palpable gallbladder (Courvoisier). Diagnosis?", options: ["Hepatic Ca", "Colon Ca", "Cancer head of pancreas", "Metastasis"], correct: 2 },
+            { q: "SAAG >= 1.1 indicates:", options: ["Peritonitis", "Nephrotic syndrome", "Pancreatitis", "Portal Hypertension (Cirrhosis/CHF)"], correct: 3 },
+            { q: "Dysphagia feature of:", options: ["GERD", "Peptic ulcer", "Mesenteric ischemia", "Scleroderma"], correct: 3 },
+            { q: "Ascites out of proportion to edema:", options: ["Budd Chiari", "Constrictive pericarditis", "Cirrhosis", "Tricuspid regurge"], correct: 0 },
+            { q: "Osmotic diarrhea feature:", options: ["Stool volume decreases with fasting", "Volume > 1L", "Normal gap", "Infectious"], correct: 0 },
+            { q: "Helicobacter pylori NOT associated with:", options: ["Gastric ulcer", "Duodenal ulcer", "Colorectal cancer", "Gastric cancer"], correct: 2 },
+            { q: "Not a feature of IBS:", options: ["Pain relieved by defecation", "Hematochezia (Alarm sign)", "Alternating habits", "Incomplete evacuation"], correct: 1 },
+            { q: "Feature of hepatocellular failure:", options: ["Xanthelasma", "Spider nevi", "Cherry angioma", "Pallor"], correct: 1 },
+            { q: "Achalasia symptom NOT:", options: ["Chest pain", "Heartburn", "Diarrhea", "Dysphagia"], correct: 2 },
+            { q: "Complication of portal hypertension EXCEPT:", options: ["Hepatomegaly", "Splenomegaly", "Encephalopathy", "Varices"], correct: 0 },
+            
+            // HEMATOLOGY
+            { q: "Increased reticulocytes seen in:", options: ["Aplastic anemia", "Hemolysis", "Pregnancy", "Renal failure"], correct: 1 },
+            { q: "Iron deficiency feature:", options: ["Bone deformity", "Clubbing", "Koilonychia", "Leg ulcers"], correct: 2 },
+            { q: "Bleeding gums, fever, pancytopenia, hypocellular marrow. Diagnosis?", options: ["Aplastic anemia", "Hypersplenism", "Leukemia", "Neutropenia"], correct: 0 },
+            { q: "Rash on legs, abdo pain, joint pain post-URI. Diagnosis?", options: ["Henoch-Schonlein purpura", "Hand foot syndrome", "Rheumatic fever", "Still's"], correct: 0 },
+            { q: "Bone pain and hypercalcemia:", options: ["ESRD", "Osteomalacia", "Osteoporosis", "Multiple myeloma"], correct: 3 },
+            { q: "Jaundice after sulfa drug. High indirect bili. Diagnosis?", options: ["Gall stones", "Hepatitis", "Sclerosing cholangitis", "G6PD deficiency"], correct: 3 },
+            { q: "Bleeding, purpura, low platelets, normal others. Diagnosis?", options: ["vWD", "Glanzman", "ITP", "TTP"], correct: 2 },
+            { q: "Splenomegaly, high WBC, Philadelphia chromosome. Diagnosis?", options: ["AML", "CML", "CLL", "Leukemoid"], correct: 1 },
+            { q: "Warfarin monitoring test:", options: ["INR", "APTT", "Bleeding time", "Clotting time"], correct: 0 },
+            { q: "Microcytic anemia causes EXCEPT:", options: ["Thalassemia", "Pernicious anemia", "Iron deficiency", "Sideroblastic"], correct: 1 },
+            { q: "Hemophilia A:", options: ["Factor VIII deficiency", "Prolonged PT", "Autosomal dominant", "Platelet defect"], correct: 0 },
+            { q: "Polycythemia vera findings EXCEPT:", options: ["High Erythropoietin (It is low)", "Splenomegaly", "Thrombocytosis", "Normal O2 sat"], correct: 0 },
+            { q: "Reed-Sternberg cells found in:", options: ["Multiple myeloma", "Hodgkin's lymphoma", "CLL", "CML"], correct: 1 },
+            { q: "Heparin monitoring test:", options: ["Bleeding time", "Factor X", "Platelet count", "APTT"], correct: 3 },
+            { q: "Antidote for Warfarin:", options: ["Vitamin K", "Protamine", "Calcium", "Heparin"], correct: 0 },
+            { q: "Very large spleen EXCEPT:", options: ["Bilharzia", "CML", "Sickle cell", "Thalassemia major"], correct: 2 },
+            
+            // ENDOCRINE
+            { q: "Macrovascular complication of diabetes:", options: ["Gastroparesis", "Orthostatic hypotension", "Peripheral vascular disease", "Retinopathy"], correct: 2 },
+            { q: "Hypothyroidism feature:", options: ["Diarrhea", "Menorrhagia", "Pretibial myxedema", "Tachycardia"], correct: 1 },
+            { q: "Graves' disease features:", options: ["Proptosis, goiter, tremor", "Weight gain, dry skin", "Painful thyroid", "Nodule"], correct: 0 },
+            { q: "Acromegaly features:", options: ["Coarse features, large tongue", "Moon face", "Hypotension", "Thin skin"], correct: 0 },
+            { q: "Diabetic Nephropathy prevention:", options: ["Creatinine", "Screen for microalbuminuria", "Urine analysis", "Ultrasound"], correct: 1 },
+            { q: "Cushing's syndrome feature:", options: ["Weight loss", "Hypotension", "Hypoglycemia", "Truncal obesity/Striae"], correct: 3 },
+            { q: "DKA fluid replacement:", options: ["Isotonic saline", "Dextrose", "Half saline", "Oral fluids"], correct: 0 },
+            { q: "Ideal Type 1 DM regimen:", options: ["Oral", "GLP1", "Premix", "Basal-bolus"], correct: 3 },
+            { q: "Medication increasing osteoporosis:", options: ["CCB", "Corticosteroids", "PPI", "ARB"], correct: 1 },
+            { q: "High calcium causes EXCEPT:", options: ["Primary hyperparathyroidism", "Sarcoidosis", "Cancer", "Secondary hyperparathyroidism"], correct: 3 },
+            { q: "Addison's disease feature NOT:", options: ["Hypotension", "Pigmentation", "Hyperkalemia", "Obesity"], correct: 3 },
+            { q: "Prolactinoma treatment:", options: ["Surgery", "Radiotherapy", "Bromocriptine", "Estrogen"], correct: 2 },
+            { q: "Pheochromocytoma triad:", options: ["Headache, Sweating, Palpitations", "Flush, Diarrhea, Wheeze", "Weight gain, lethargy", "Polyuria"], correct: 0 },
+            { q: "Conn's syndrome:", options: ["HTN + Hypokalemia", "HTN + Hyperkalemia", "Hypotension", "Edema"], correct: 0 },
+            { q: "Diabetes Insipidus:", options: ["Polyuria + Polydipsia", "Glycosuria", "High Urine Osmolality", "Hyponatremia"], correct: 0 },
+            
+            // RHEUMATOLOGY
+            { q: "Inflammatory back pain, morning stiffness. Sign?", options: ["Hypoesthesia", "Proximal weakness", "Sacroiliac tenderness", "Distal weakness"], correct: 2 },
+            { q: "Fever, malar rash, alopecia, oral ulcer. Diagnosis?", options: ["Discoid lupus", "Scleroderma", "RA", "SLE"], correct: 3 },
+            { q: "Heberden's nodes seen in:", options: ["Osteoarthritis", "RA", "Gout", "SLE"], correct: 0 },
+            { q: "Monoarthritis of big toe:", options: ["SLE", "RA", "Acute Gout", "Sjogren"], correct: 2 },
+            { q: "Proximal muscle weakness, CPK 2000. Diagnosis?", options: ["SLE", "Dermatomyositis/Polymyositis", "Myopathy", "RA"], correct: 1 },
+            { q: "Scleroderma treatment for Raynaud's:", options: ["Nifedipine (CCB)", "ACEI", "Steroids", "Beta blockers"], correct: 0 },
+            { q: "Target of RA treatment:", options: ["Pain relief", "Reverse deformity", "Prevent extra-articular", "Remission/Low activity"], correct: 3 },
+            { q: "Extra-articular RA:", options: ["Dactylitis", "Synovitis", "Ulnar deviation", "Sjogren's syndrome"], correct: 3 },
+            { q: "AS initial manifestation:", options: ["Iritis", "Hemoptysis", "Hip arthritis", "Inflammatory back pain"], correct: 3 },
+            { q: "Behcet's disease features:", options: ["Oral/Genital ulcers + Uveitis", "Urethritis", "Rash", "Dry eyes"], correct: 0 },
+            { q: "Anti-CCP specific for:", options: ["SLE", "RA", "Scleroderma", "Sjogren"], correct: 1 },
+            { q: "Gout crystals:", options: ["Needle, negative birefringent", "Rhomboid, positive", "Spherical", "Amorphous"], correct: 0 },
+            { q: "Giant Cell Arteritis symptoms:", options: ["Temporal headache, jaw claudication", "Rash", "Chest pain", "Hematuria"], correct: 0 },
+            { q: "Migratory fleeting polyarthritis associated with:", options: ["Rheumatic fever", "Rheumatoid arthritis", "Septic arthritis", "Gout"], correct: 0 },
+            
+            // NEPHROLOGY
+            { q: "Renal biopsy indication:", options: ["Unexplained acute renal failure", "Single kidney", "Small kidney", "HTN"], correct: 0 },
+            { q: "Nephrotic syndrome causes:", options: ["Amyloidosis", "Polycystic", "Ca Kidney", "TB"], correct: 0 },
+            { q: "Periorbital swelling, hematuria after sore throat. Diagnosis?", options: ["Acute nephritic syndrome", "AKI", "CKD", "PKD"], correct: 0 },
+            { q: "Drug causing hyperkalemia:", options: ["Furosemide", "Thiazide", "Spironolactone", "Calcium"], correct: 2 },
+            { q: "Drug causing hypokalemia:", options: ["Captopril", "Furosemide", "Spironolactone", "Losartan"], correct: 1 },
+            { q: "Leading cause of death in CKD:", options: ["Cardiovascular", "Hyperkalemia", "Infection", "Malignancy"], correct: 0 },
+            { q: "Muddy brown casts:", options: ["ATN", "AIN", "GN", "Prerenal"], correct: 0 },
+            { q: "Nephrotic syndrome triad:", options: ["Proteinuria >3.5 + Edema + Hypoalbuminemia", "Hematuria", "HTN", "Azotemia"], correct: 0 },
+            { q: "Most common renal stone:", options: ["Calcium Oxalate", "Uric acid", "Struvite", "Cystine"], correct: 0 },
+            { q: "Fatty casts in urine found in:", options: ["Nephrotic syndrome", "Acute GN", "ARF", "Chronic GN"], correct: 0 },
+            
+            // OTHERS
+            { q: "Traveler's diarrhea cause:", options: ["E. coli", "Brucella", "Giardia", "Shigella"], correct: 0 },
+            { q: "Giardia treatment:", options: ["Ciprofloxacin", "Gluten free", "Metronidazole/Tinidazole", "Praziquantel"], correct: 2 },
+            { q: "Dementia NOT feature:", options: ["Abstract impairment", "Good recent memory (False)", "Personality change", "Short term impairment"], correct: 1 },
+            { q: "Elderly prescribing:", options: ["Avoid unnecessary drugs", "Start high dose (False)", "Few drugs", "Drug history"], correct: 1 },
+            { q: "Turner syndrome:", options: ["45XO", "47XXY", "47XY", "46XX"], correct: 0 },
+            { q: "Klinefelter syndrome:", options: ["47XXY", "45XO", "47XY", "46XX"], correct: 0 },
+            { q: "Marfan syndrome inheritance:", options: ["Autosomal Dominant", "Recessive", "X-linked", "Mitochondrial"], correct: 0 },
+            { q: "Infectious Mononucleosis features:", options: ["Fever, LAD, Pharyngitis", "Cough", "Diarrhea", "Jaundice"], correct: 0 },
+            { q: "Brucellosis history:", options: ["Animal/Milk exposure", "Travel", "Sexual", "Surgery"], correct: 0 },
+            { q: "Typhoid features:", options: ["Step-ladder fever, Rose spots", "Undulant fever", "Rash", "Jaundice"], correct: 0 },
+            { q: "Blue gum line seen in:", options: ["Lead poisoning", "Arsenic", "Copper", "Bismuth"], correct: 0 }
+        ];
+
+        // --- 2. GAME STATE ---
+        let board = [];
+        let currentPlayer = 1;
+        let winner = null;
+        let questionQueue = [];
+        let pendingColumn = null;
+        let currentQuestion = null;
+        let isDarkMode = true;
+        let historyData = [];
+        let activePlayersCount = 2; // Default to 2 players
+
+        // --- 3. QUESTION MANAGEMENT ---
+        // Initialize questions ONLY ONCE when page loads to prevent repetition
+        function initQuestions() {
+            // Use the FULL database
+            questionQueue = [...ORIGINAL_QUESTIONS_DB];
+            shuffleArray(questionQueue);
+        }
+
+        function startWithPlayers(count) {
+            activePlayersCount = count;
+            document.getElementById('setup-modal').classList.add('hidden');
+            resetGame();
+        }
+
+        function showSetupModal() {
+            document.getElementById('setup-modal').classList.remove('hidden');
+        }
+
+        function initGame() {
+            // Only refill if empty or first load
+            if (!questionQueue || questionQueue.length === 0) {
+                initQuestions();
+            }
+            
+            board = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+            currentPlayer = 1;
+            winner = null;
+            pendingColumn = null;
+            
+            updateUI();
+            renderBoard();
+            
+            // Hide all modals
+            ['question-modal', 'feedback-modal'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden', 'opacity-0');
+                el.classList.remove('flex'); 
+            });
+            document.getElementById('winner-modal').classList.add('hidden');
+            
+            updateDarkModeIcon();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function renderBoard() {
+            const boardEl = document.getElementById('game-board');
+            const clickLayer = document.getElementById('click-layer');
+            boardEl.innerHTML = '';
+            clickLayer.innerHTML = '';
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cellVal = board[r][c];
+                    const cell = document.createElement('div');
+                    // Adjusted size for compactness
+                    cell.className = 'w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center shadow-inner relative overflow-hidden bg-slate-100 dark:bg-slate-300 transition-colors ring-1 ring-black/5 dark:ring-white/5';
+                    
+                    if (cellVal !== 0) {
+                        const player = PLAYERS_CONFIG.find(p => p.id === cellVal);
+                        if(player) {
+                            cell.innerHTML = `<div class="w-full h-full ${player.colorClass} rounded-full shadow-[inset_0_4px_6px_rgba(0,0,0,0.3)] animate-bounce-in"></div>`;
+                        }
+                    }
+                    boardEl.appendChild(cell);
+                }
+            }
+
+            for (let c = 0; c < COLS; c++) {
+                const colTrigger = document.createElement('div');
+                colTrigger.style.gridColumnStart = c + 1;
+                colTrigger.style.gridRow = `1 / span ${ROWS}`;
+                colTrigger.className = 'cursor-pointer hover:bg-white/10 rounded-lg transition-colors';
+                colTrigger.onclick = () => handleColumnClick(c);
+                clickLayer.appendChild(colTrigger);
+            }
+        }
+
+        function updateUI() {
+            const container = document.getElementById('players-bar');
+            container.innerHTML = '';
+
+            // Filter players based on active count
+            const activeConfig = PLAYERS_CONFIG.slice(0, activePlayersCount);
+
+            activeConfig.forEach(p => {
+                const isActive = currentPlayer === p.id;
+                const el = document.createElement('div');
+                el.className = `flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 whitespace-nowrap border ${isActive ? p.bgLight + ' ' + p.bgDark + ' ring-2 ' + p.ringClass + ' border-transparent shadow-md scale-105' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-60 grayscale'}`;
+                el.innerHTML = `
+                    <div class="w-3 h-3 rounded-full ${p.colorClass} ${p.shadow}"></div>
+                    <span class="font-bold text-xs sm:text-sm ${isActive ? p.textLight + ' ' + p.textDark : 'text-slate-500 dark:text-slate-400'}">${p.name}</span>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function handleColumnClick(colIndex) {
+            if (winner) return;
+            if (board[0][colIndex] !== 0) return;
+            pendingColumn = colIndex;
+            
+            // Smart Queue Logic:
+            // The queue is shifted, so this question is REMOVED permanently from this session
+            if (questionQueue.length === 0) {
+                // Edge case: Refill if somehow exhausted (unlikely with 800 qs)
+                initQuestions(); 
+            }
+            currentQuestion = questionQueue.shift();
+            
+            showQuestionModal();
+        }
+
+        function showQuestionModal() {
+            const modal = document.getElementById('question-modal');
+            const header = document.getElementById('question-header');
+            const text = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+
+            const player = PLAYERS_CONFIG.find(p => p.id === currentPlayer);
+            header.textContent = `Question for ${player.name}`;
+            header.className = `p-4 text-white text-center font-bold text-lg ${player.colorClass} shadow-sm`;
+            
+            text.textContent = currentQuestion.q;
+            optionsContainer.innerHTML = '';
+
+            const optionsWithLogic = currentQuestion.options.map((opt, i) => ({
+                text: opt,
+                isCorrect: i === currentQuestion.correct,
+                originalIndex: i
+            }));
+            shuffleArray(optionsWithLogic);
+
+            optionsWithLogic.forEach((optObj, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full p-3 md:p-4 text-sm md:text-base font-medium bg-slate-50 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900 border border-slate-200 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500 rounded-xl transition-all text-slate-700 dark:text-slate-200 hover:text-blue-700 dark:hover:text-blue-300 text-left flex gap-3 items-start group';
+                btn.innerHTML = `<span class="font-bold opacity-60 group-hover:opacity-100 transition-opacity mt-0.5">${idx + 1}.</span> <span class="leading-snug">${optObj.text}</span>`;
+                btn.onclick = () => handleAnswer(optObj.isCorrect, optObj.text);
+                optionsContainer.appendChild(btn);
+            });
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('#question-content').classList.remove('scale-95');
+                modal.querySelector('#question-content').classList.add('scale-100');
+            }, 10);
+        }
+
+        function handleAnswer(isCorrect, selectedText) {
+            // Add to history
+            addToHistory(currentQuestion, isCorrect, selectedText);
+
+            closeModal('question-modal');
+            if (isCorrect) {
+                dropPiece(pendingColumn);
+                if (checkWin()) {
+                    winner = currentPlayer;
+                    showWinnerModal();
+                } else {
+                    showFeedback(true);
+                }
+            } else {
+                showFeedback(false);
+            }
+        }
+
+        function addToHistory(question, isCorrect, selectedText) {
+            const player = PLAYERS_CONFIG.find(p => p.id === currentPlayer);
+            const historyItem = {
+                q: question.q,
+                correctAnswer: question.options[question.correct],
+                selected: selectedText,
+                isCorrect: isCorrect,
+                player: player,
+                time: new Date()
+            };
+            historyData.unshift(historyItem);
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            const desktopList = document.getElementById('history-list');
+            const mobileList = document.getElementById('mobile-history-list');
+            const emptyMsgDesktop = document.getElementById('empty-history-msg');
+            const emptyMsgMobile = document.getElementById('mobile-empty-history-msg');
+
+            if (historyData.length > 0) {
+                if(emptyMsgDesktop) emptyMsgDesktop.classList.add('hidden');
+                if(emptyMsgMobile) emptyMsgMobile.classList.add('hidden');
+            }
+
+            const html = historyData.map(item => `
+                <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 text-sm shadow-sm animate-bounce-in">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="font-bold text-xs px-2 py-0.5 rounded-full text-white ${item.player.colorClass}">${item.player.name}</span>
+                        ${item.isCorrect 
+                            ? '<span class="text-green-500 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Correct</span>' 
+                            : '<span class="text-red-500 font-bold flex items-center gap-1"><i data-lucide="x" class="w-3 h-3"></i> Wrong</span>'}
+                    </div>
+                    <p class="font-medium text-slate-800 dark:text-slate-200 mb-2 leading-tight">${item.q}</p>
+                    ${!item.isCorrect ? `
+                        <div class="text-xs p-2 bg-red-50 dark:bg-red-900/20 rounded text-red-700 dark:text-red-300">
+                            <span class="font-bold block mb-0.5">Your Answer:</span> ${item.selected}
+                        </div>
+                        <div class="text-xs p-2 mt-1 bg-green-50 dark:bg-green-900/20 rounded text-green-700 dark:text-green-300">
+                            <span class="font-bold block mb-0.5">Correct Answer:</span> ${item.correctAnswer}
+                        </div>
+                    ` : `
+                        <div class="text-xs p-2 bg-green-50 dark:bg-green-900/20 rounded text-green-700 dark:text-green-300">
+                            <span class="font-bold">Answer:</span> ${item.selected}
+                        </div>
+                    `}
+                </div>
+            `).join('');
+
+            desktopList.innerHTML = html;
+            mobileList.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function toggleHistoryMobile() {
+            const drawer = document.getElementById('mobile-history-drawer');
+            const overlay = document.getElementById('mobile-history-overlay');
+            
+            if (drawer.classList.contains('translate-x-full')) {
+                drawer.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                drawer.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function dropPiece(col) {
+            for (let r = ROWS - 1; r >= 0; r--) {
+                if (board[r][col] === 0) {
+                    board[r][col] = currentPlayer;
+                    break;
+                }
+            }
+            renderBoard();
+        }
+
+        function showFeedback(isSuccess) {
+            const modal = document.getElementById('feedback-modal');
+            const iconContainer = document.getElementById('feedback-icon-container');
+            const title = document.getElementById('feedback-title');
+            const msg = document.getElementById('feedback-msg');
+            const correctionBox = document.getElementById('correction-box');
+            const correctionText = document.getElementById('correction-text');
+
+            if (isSuccess) {
+                iconContainer.innerHTML = '<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-full"><i data-lucide="check-circle-2" class="w-12 h-12 text-green-500"></i></div>';
+                title.textContent = 'Correct!';
+                msg.textContent = 'Well done. Piece placed on board.';
+                correctionBox.classList.add('hidden');
+            } else {
+                iconContainer.innerHTML = '<div class="bg-red-100 dark:bg-red-900/30 p-3 rounded-full"><i data-lucide="x-circle" class="w-12 h-12 text-red-500"></i></div>';
+                title.textContent = 'Incorrect';
+                msg.textContent = 'Turn passes to the next team.';
+                correctionBox.classList.remove('hidden');
+                correctionText.textContent = currentQuestion.options[currentQuestion.correct];
+            }
+            
+            lucide.createIcons();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+        }
+
+        function closeFeedback() {
+            closeModal('feedback-modal');
+            if (!winner) switchTurn();
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function switchTurn() {
+            // Dynamic switching based on activePlayersCount
+            currentPlayer = (currentPlayer % activePlayersCount) + 1;
+            updateUI();
+        }
+
+        function checkWin() {
+            const p = currentPlayer;
+            // Horizontal
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS - 3; c++) {
+                    if (board[r][c] === p && board[r][c+1] === p && board[r][c+2] === p && board[r][c+3] === p) return true;
+                }
+            }
+            // Vertical
+            for (let r = 0; r < ROWS - 3; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c] === p && board[r+1][c] === p && board[r+2][c] === p && board[r+3][c] === p) return true;
+                }
+            }
+            // Diagonal /
+            for (let r = 3; r < ROWS; r++) {
+                for (let c = 0; c < COLS - 3; c++) {
+                    if (board[r][c] === p && board[r-1][c+1] === p && board[r-2][c+2] === p && board[r-3][c+3] === p) return true;
+                }
+            }
+            // Diagonal \
+            for (let r = 0; r < ROWS - 3; r++) {
+                for (let c = 0; c < COLS - 3; c++) {
+                    if (board[r][c] === p && board[r+1][c+1] === p && board[r+2][c+2] === p && board[r+3][c+3] === p) return true;
+                }
+            }
+            return false;
+        }
+
+        function showWinnerModal() {
+            const modal = document.getElementById('winner-modal');
+            const msg = document.getElementById('winner-msg');
+            const player = PLAYERS_CONFIG.find(p => p.id === winner);
+            msg.textContent = `${player.name} Wins!`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex'); 
+            lucide.createIcons();
+        }
+
+        function resetGame() {
+            // NOTE: We do NOT reset questionQueue here to maintain history and avoid repetition
+            // across games in the same session.
+            historyData = [];
+            updateHistoryUI();
+            initGame();
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+            updateDarkModeIcon();
+        }
+
+        function updateDarkModeIcon() {
+            const sun = document.getElementById('sun-icon');
+            const moon = document.getElementById('moon-icon');
+            if (isDarkMode) {
+                sun.classList.remove('hidden');
+                moon.classList.add('hidden');
+            } else {
+                sun.classList.add('hidden');
+                moon.classList.remove('hidden');
+            }
+        }
+
+        window.onload = function() {
+            initQuestions();
+            // Show setup modal on load
+            showSetupModal();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
