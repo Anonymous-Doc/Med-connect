@@ -1,26 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2PD3975NL9"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-2PD3975NL9');
-</script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Med-Connect Ultimate</title>
-    <link rel="icon" type="image/png" href="icon.png">
+    <title>Med-Connect Ultimate (Compact)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Tailwind Config for Custom Colors -->
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -32,13 +20,14 @@
                             100: '#e0f2fe',
                             500: '#0ea5e9',
                             600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
                             900: '#0c4a6e',
                         }
                     },
                     animation: {
                         'bounce-drop': 'bounceDrop 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
                         'fade-in': 'fadeIn 0.3s ease-in-out',
-                        'pulse-ring': 'pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         bounceDrop: {
@@ -50,10 +39,6 @@
                         fadeIn: {
                             '0%': { opacity: '0' },
                             '100%': { opacity: '1' },
-                        },
-                        pulseRing: {
-                            '0%': { transform: 'scale(0.8)', opacity: '0.5' },
-                            '100%': { transform: 'scale(1.2)', opacity: '0' },
                         }
                     }
                 }
@@ -61,229 +46,280 @@
         }
     </script>
 
-    <!-- Lucide Icons -->
+    <!-- Icons & Fonts -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Hide scrollbar for clean UI */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Compact typography tweaks */
+        h1, h2, h3 { letter-spacing: -0.025em; }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-300 h-screen overflow-hidden flex flex-col md:flex-row">
+<!-- Reduced text size base to text-xs/sm for compactness -->
+<body class="bg-gray-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 h-screen overflow-hidden flex flex-col md:flex-row text-xs md:text-sm">
 
-    <!-- Sidebar (History) -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 bg-white dark:bg-slate-800 shadow-lg transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-200 dark:border-slate-700">
-        <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-            <h2 class="text-xl font-bold flex items-center gap-2">
-                <i data-lucide="history" class="w-5 h-5 text-medical-500"></i>
-                Log History
+    <!-- Sidebar: Increased Z-Index to 75 to be above the modal (z-70) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-[75] w-56 bg-white dark:bg-slate-900 shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-200 dark:border-slate-800">
+        <div class="p-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 h-12">
+            <h2 class="text-sm font-bold flex items-center gap-2 text-slate-800 dark:text-white">
+                <i data-lucide="history" class="w-4 h-4 text-medical-500"></i>
+                Session History
             </h2>
-            <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
-                <i data-lucide="x" class="w-5 h-5"></i>
+            <button onclick="toggleSidebar()" class="md:hidden p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
-        <div id="history-container" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
-            <div class="text-center text-slate-400 text-sm mt-10">Game started... No moves yet.</div>
+        <div id="history-container" class="flex-1 overflow-y-auto p-1.5 space-y-1.5 no-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
+            <div class="text-center text-slate-400 text-[10px] mt-10 italic">No questions answered yet.</div>
         </div>
     </aside>
 
     <!-- Main Content -->
     <main id="main-content" class="flex-1 flex flex-col h-full relative ml-0 transition-all duration-300">
         
-        <!-- Header -->
-        <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 md:px-8 shrink-0">
-            <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors" title="Toggle History Panel">
-                    <i data-lucide="panel-left" class="w-6 h-6"></i>
+        <!-- Header: Reduced height to h-12 (was h-14) -->
+        <header class="h-12 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-3 shrink-0 shadow-sm z-30">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleSidebar()" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Toggle History">
+                    <i data-lucide="panel-left" class="w-4 h-4"></i>
                 </button>
                 
                 <div class="flex items-center gap-2">
-                    <div class="bg-medical-500 text-white p-2 rounded-lg">
-                        <i data-lucide="activity" class="w-6 h-6"></i>
+                    <div class="bg-gradient-to-br from-medical-500 to-medical-700 text-white p-1 rounded-lg shadow-lg shadow-medical-500/30">
+                        <i data-lucide="activity" class="w-4 h-4"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg leading-tight hidden sm:block">Med-Connect Ultimate</h1>
-                        <h1 class="font-bold text-lg leading-tight sm:hidden">Med-Connect</h1>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Dr. Mohamed's Edition</p>
+                        <h1 class="font-bold text-sm leading-tight hidden sm:block">Med-Connect <span class="text-medical-500">Ultimate</span></h1>
+                        <h1 class="font-bold text-sm leading-tight sm:hidden">Med-Connect</h1>
+                        <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider hidden sm:block">Dr. Mohamed's Edition</p>
                     </div>
                 </div>
             </div>
 
-            <div class="flex items-center gap-4">
-                <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                    <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
-                    <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleTheme()" class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400">
+                    <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
                 </button>
                 
-                <button onclick="initGameSetup()" class="bg-medical-600 hover:bg-medical-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-medical-500/30 transition-all flex items-center gap-2">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">New Game</span>
+                <button onclick="initGameSetup()" class="bg-medical-600 hover:bg-medical-700 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow-lg shadow-medical-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5">
+                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                    <span class="hidden sm:inline">New Session</span>
                 </button>
             </div>
         </header>
 
-        <!-- Game Area -->
-        <div class="flex-1 overflow-hidden relative flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 p-2 md:p-6 gap-4">
+        <!-- Game Area: Minimized padding, flex-col to fit height -->
+        <div class="flex-1 overflow-hidden relative flex flex-col items-center justify-start bg-slate-100 dark:bg-slate-950 p-1 md:p-2 gap-1 w-full">
             
-            <!-- Scoreboard -->
-            <div id="scoreboard" class="w-full max-w-5xl flex justify-center gap-2 md:gap-4 px-2 overflow-x-auto no-scrollbar py-2">
-                <!-- Score cards generated by JS -->
-            </div>
+            <!-- 1. STRATEGY MODE UI -->
+            <div id="strategy-ui" class="w-full flex flex-col items-center gap-1 h-full justify-center">
+                <!-- Scoreboard: Extremely compact -->
+                <div id="scoreboard" class="w-full max-w-4xl flex justify-center gap-1.5 px-1 overflow-x-auto no-scrollbar py-0.5 min-h-[50px] shrink-0">
+                    <!-- Generated by JS -->
+                </div>
 
-            <!-- The Grid Container -->
-            <div class="relative bg-blue-700 dark:bg-blue-900 p-3 md:p-4 rounded-xl shadow-2xl shadow-blue-900/50 border-4 border-blue-600 dark:border-blue-800 overflow-auto max-w-full mx-auto max-h-[75vh] flex flex-col">
+                <!-- Grid Container: Tighter padding, responsive sizing -->
+                <div class="relative bg-blue-600 dark:bg-blue-900 p-2 rounded-xl shadow-xl shadow-blue-900/40 border-4 border-blue-500 dark:border-blue-800 overflow-hidden w-fit mx-auto flex flex-col transition-all duration-300 shrink">
+                    <div class="w-full"> 
+                        <div id="column-headers" class="grid gap-1 px-0.5 mb-0.5 w-full text-center"></div>
+                        <div class="relative w-full">
+                            <div id="game-grid" class="grid gap-1 relative z-10"></div>
+                            <div id="column-selectors" class="absolute inset-0 grid gap-1 z-20 h-full w-full"></div>
+                        </div>
+                    </div>
+                </div>
                 
-                <!-- Column Headers (Numbers) -->
-                <div id="column-headers" class="grid gap-1.5 md:gap-3 px-0.5 md:px-0 mb-2 min-w-max text-center">
-                    <!-- Numbers generated by JS -->
-                </div>
-
-                <div class="relative min-w-max">
-                    <!-- Interactive Columns Layer -->
-                    <div id="game-grid" class="grid gap-1.5 md:gap-3 relative z-10 pb-4">
-                        <!-- Grid cells will be generated by JS -->
-                    </div>
-                    
-                    <!-- Column Selectors (Invisible Hitboxes & Hover) -->
-                    <div id="column-selectors" class="absolute inset-0 grid gap-1.5 md:gap-3 z-20 h-full w-full pb-4">
-                        <!-- Column click handlers -->
-                    </div>
-                </div>
+                <p class="text-[9px] font-medium text-slate-400 flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 px-2 py-0.5 rounded-full shrink-0 mt-0.5">
+                    <i data-lucide="info" class="w-3 h-3"></i>
+                    Click column to drop.
+                </p>
             </div>
 
-            <p class="text-xs text-slate-400 flex items-center gap-1">
-                <i data-lucide="info" class="w-3 h-3"></i>
-                Click any column to answer a question and drop a piece.
-            </p>
+            <!-- 2. SOLO MODE UI -->
+            <div id="solo-ui" class="hidden flex-col items-center justify-center w-full max-w-xl text-center gap-3 animate-fade-in p-2">
+                 <div class="space-y-0.5 mt-4">
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-white" id="solo-mode-title">Solo Quiz</h2>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto">Focus on accuracy.</p>
+                </div>
+
+                <button onclick="resumeGame()" class="hidden mt-1 px-5 py-2 bg-medical-600 hover:bg-medical-700 text-white rounded-full font-bold shadow-lg transition-transform hover:scale-105 flex items-center gap-1.5 text-xs" id="resume-btn">
+                    <i data-lucide="play" class="w-3 h-3"></i> Resume Quiz
+                </button>
+            </div>
+
         </div>
     </main>
 
-    <!-- Setup Modal -->
-    <div id="setup-modal" class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto no-scrollbar">
-            <div class="text-center mb-6">
-                <div class="bg-medical-100 dark:bg-medical-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-medical-600 dark:text-medical-400">
-                    <i data-lucide="settings-2" class="w-8 h-8"></i>
+    <!-- Setup Modal: Compact -->
+    <div id="setup-modal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-xs w-full p-0 border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-50 dark:bg-slate-800/50 p-3 text-center border-b border-slate-200 dark:border-slate-800">
+                <div class="bg-medical-100 dark:bg-medical-900/50 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-1.5 text-medical-600 dark:text-medical-400 shadow-inner">
+                    <i data-lucide="settings-2" class="w-4 h-4"></i>
                 </div>
-                <h2 class="text-2xl font-bold mb-2">Game Setup</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-sm">Configure your battleground.</p>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white">Configuration</h2>
             </div>
 
-            <!-- Specialty Selection (Fixed Icon Wrapper) -->
-            <div class="space-y-4 mb-6">
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Select Specialty</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="selectSpecialty('derma')" class="specialty-btn px-4 py-4 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold flex flex-col items-center gap-2 group" data-type="derma">
-                        <!-- Added icon-box wrapper -->
-                        <div class="icon-box text-slate-400 group-hover:text-medical-500 transition-colors">
-                            <i data-lucide="scan-face" class="w-6 h-6"></i>
+            <div class="p-3 overflow-y-auto space-y-3">
+                <!-- 1. Game Mode -->
+                <div class="space-y-1.5">
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Mode</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="selectGameMode('strategy')" class="mode-btn group relative p-2 rounded-lg border-2 transition-all text-left" data-mode="strategy">
+                            <div class="flex items-center gap-1.5 mb-0.5">
+                                <i data-lucide="grid-3x3" class="w-3 h-3 text-slate-500"></i>
+                                <span class="font-bold text-[10px] text-slate-700 dark:text-slate-200">Strategy</span>
+                            </div>
+                            <p class="text-[8px] text-slate-400 leading-tight">Connect 4.</p>
+                        </button>
+
+                        <button onclick="selectGameMode('solo')" class="mode-btn group relative p-2 rounded-lg border-2 transition-all text-left" data-mode="solo">
+                            <div class="flex items-center gap-1.5 mb-0.5">
+                                <i data-lucide="book-open" class="w-3 h-3 text-slate-500"></i>
+                                <span class="font-bold text-[10px] text-slate-700 dark:text-slate-200">Solo</span>
+                            </div>
+                            <p class="text-[8px] text-slate-400 leading-tight">MCQ Only.</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Specialty -->
+                <div class="space-y-1.5">
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Topic</label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button onclick="selectSpecialty('derma')" class="specialty-btn py-1.5 px-1 rounded-lg border-2 transition-all flex flex-col items-center gap-0.5" data-type="derma">
+                            <i data-lucide="scan-face" class="w-3 h-3 text-slate-400 icon-wrapper"></i>
+                            <span class="text-[9px] font-bold">Derma</span>
+                        </button>
+                        <button onclick="selectSpecialty('patho')" class="specialty-btn py-1.5 px-1 rounded-lg border-2 transition-all flex flex-col items-center gap-0.5" data-type="patho">
+                            <i data-lucide="microscope" class="w-3 h-3 text-slate-400 icon-wrapper"></i>
+                            <span class="text-[9px] font-bold">Patho</span>
+                        </button>
+                        <button onclick="selectSpecialty('mixed')" class="specialty-btn py-1.5 px-1 rounded-lg border-2 transition-all flex flex-col items-center gap-0.5" data-type="mixed">
+                            <i data-lucide="layers" class="w-3 h-3 text-slate-400 icon-wrapper"></i>
+                            <span class="text-[9px] font-bold">Mixed</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Question Count -->
+                <div id="question-limit-options" class="space-y-1.5 hidden">
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Questions</label>
+                    <div class="flex gap-1.5">
+                        <button onclick="selectQuestionLimit(10)" class="limit-btn flex-1 py-1 rounded border-2 font-bold text-[10px]" data-limit="10">10</button>
+                        <button onclick="selectQuestionLimit(50)" class="limit-btn flex-1 py-1 rounded border-2 font-bold text-[10px]" data-limit="50">50</button>
+                        <button onclick="selectQuestionLimit(100)" class="limit-btn flex-1 py-1 rounded border-2 font-bold text-[10px]" data-limit="100">100</button>
+                    </div>
+                </div>
+
+                <!-- 4. Strategy Options -->
+                <div id="strategy-options" class="space-y-3">
+                    <div class="border-t border-slate-200 dark:border-slate-800 pt-2">
+                        <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Teams</label>
+                        <div class="flex justify-between gap-1">
+                            <button onclick="selectPlayerCount(2)" class="player-btn flex-1 py-1 rounded border-2 font-bold text-[10px]" data-count="2">2</button>
+                            <button onclick="selectPlayerCount(3)" class="player-btn flex-1 py-1 rounded border-2 font-bold text-[10px]" data-count="3">3</button>
+                            <button onclick="selectPlayerCount(4)" class="player-btn flex-1 py-1 rounded border-2 font-bold text-[10px]" data-count="4">4</button>
+                            <button onclick="selectPlayerCount(5)" class="player-btn flex-1 py-1 rounded border-2 font-bold text-[10px]" data-count="5">5</button>
                         </div>
-                        <span>Dermatology</span>
-                    </button>
-                    <button onclick="selectSpecialty('patho')" class="specialty-btn px-4 py-4 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold flex flex-col items-center gap-2 group" data-type="patho">
-                        <!-- Added icon-box wrapper -->
-                        <div class="icon-box text-slate-400 group-hover:text-medical-500 transition-colors">
-                            <i data-lucide="microscope" class="w-6 h-6"></i>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Grid Width</label>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button onclick="selectGridWidth(10)" class="grid-btn py-1.5 rounded border-2 font-bold text-[9px]" data-cols="10">Std (10)</button>
+                            <button onclick="selectGridWidth(15)" class="grid-btn py-1.5 rounded border-2 font-bold text-[9px]" data-cols="15">Wide (15)</button>
+                            <button onclick="selectGridWidth(20)" class="grid-btn py-1.5 rounded border-2 font-bold text-[9px]" data-cols="20">Ultra (20)</button>
                         </div>
-                        <span>Clinical Pathology</span>
-                    </button>
+                    </div>
                 </div>
             </div>
 
-            <hr class="border-slate-200 dark:border-slate-700 mb-6">
-
-            <!-- Players Selection -->
-            <div class="space-y-4 mb-6">
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Number of Teams</label>
-                <div class="grid grid-cols-5 gap-2">
-                    <button onclick="selectPlayerCount(2)" class="player-btn px-2 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold" data-count="2">2</button>
-                    <button onclick="selectPlayerCount(3)" class="player-btn px-2 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold" data-count="3">3</button>
-                    <button onclick="selectPlayerCount(4)" class="player-btn px-2 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold" data-count="4">4</button>
-                    <button onclick="selectPlayerCount(5)" class="player-btn px-2 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold" data-count="5">5</button>
-                    <button onclick="selectPlayerCount(6)" class="player-btn px-2 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold" data-count="6">6</button>
-                </div>
+            <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                <button onclick="startGame()" class="w-full bg-medical-600 hover:bg-medical-700 text-white font-bold py-2 rounded-lg shadow-lg shadow-medical-500/30 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 text-xs">
+                    <span id="start-btn-text">Start Game</span>
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </button>
             </div>
-
-            <!-- Grid Width Selection -->
-            <div class="space-y-4 mb-8">
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Board Width (Columns)</label>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="selectGridWidth(10)" class="grid-btn px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold text-sm" data-cols="10">Standard<br><span class="text-xs font-normal">10 Cols</span></button>
-                    <button onclick="selectGridWidth(15)" class="grid-btn px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold text-sm" data-cols="15">Wide<br><span class="text-xs font-normal">15 Cols</span></button>
-                    <button onclick="selectGridWidth(20)" class="grid-btn px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 hover:border-medical-500 hover:text-medical-600 dark:hover:border-medical-500 transition-all font-bold text-sm" data-cols="20">Ultra<br><span class="text-xs font-normal">20 Cols</span></button>
-                </div>
-            </div>
-
-            <button onclick="startGame()" class="w-full bg-medical-600 hover:bg-medical-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-medical-500/30 transition-all transform hover:scale-[1.02]">
-                Start Game
-            </button>
         </div>
     </div>
 
-    <!-- Question Modal -->
-    <div id="question-modal" class="hidden fixed inset-0 z-[70] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full p-0 overflow-hidden border border-slate-200 dark:border-slate-700 transform transition-all scale-95" id="question-card">
-            <!-- Header -->
-            <div class="bg-slate-100 dark:bg-slate-900/50 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                <span id="modal-title" class="text-xs font-bold uppercase tracking-wider text-medical-600 dark:text-medical-400">Clinical Case / MCQ</span>
+    <!-- Question Modal: Compact (Integrated Feedback) -->
+    <div id="question-modal" class="hidden fixed inset-0 z-[70] bg-black/90 backdrop-blur-sm flex items-center justify-center p-3">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-lg w-full border border-slate-200 dark:border-slate-800 transform transition-all scale-95 flex flex-col max-h-[85vh] relative overflow-hidden" id="question-card">
+            
+            <!-- LIVE STATS BAR -->
+            <div id="solo-live-stats" class="hidden bg-slate-100 dark:bg-slate-950 p-1.5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center px-3">
                 <div class="flex items-center gap-2">
-                    <span id="modal-subtitle" class="text-xs text-slate-500">For</span>
-                    <div id="q-player-badge" class="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700">Red Team</div>
-                    <button id="close-review-btn" onclick="closeReviewModal()" class="hidden ml-2 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
-                        <i data-lucide="x" class="w-4 h-4"></i>
+                    <span class="text-xs font-black text-slate-800 dark:text-white" id="live-progress-text">1/10</span>
+                    <div class="h-3 w-[1px] bg-slate-300 dark:bg-slate-700"></div>
+                    <span class="text-xs font-black text-medical-600 dark:text-medical-400" id="live-score-text">0</span>
+                </div>
+                <span class="text-xs font-black text-green-600 dark:text-green-400" id="live-accuracy-text">100%</span>
+            </div>
+
+            <!-- Header -->
+            <div class="bg-slate-50 dark:bg-slate-800/50 p-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center shrink-0 h-10">
+                <div class="flex items-center gap-2">
+                    <span class="w-1 h-3 bg-medical-500 rounded-full"></span>
+                    <span id="modal-title" class="text-[9px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Clinical Case</span>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <div id="q-player-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-200 text-slate-700">Player</div>
+                    <button id="close-review-btn" onclick="closeReviewModal()" class="hidden p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <i data-lucide="x" class="w-3 h-3"></i>
                     </button>
                 </div>
             </div>
             
-            <!-- Question Body -->
-            <div class="p-6 md:p-8">
-                <h3 id="question-text" class="text-lg md:text-xl font-bold mb-6 text-slate-800 dark:text-slate-100 leading-relaxed">
-                    <!-- Question goes here -->
+            <!-- Question Content: Compact -->
+            <div class="p-3 md:p-4 overflow-y-auto">
+                <h3 id="question-text" class="text-sm md:text-base font-bold mb-3 text-slate-800 dark:text-slate-100 leading-snug font-serif">
+                    <!-- Question Text -->
                 </h3>
                 
-                <div id="options-container" class="space-y-3">
-                    <!-- Options buttons go here -->
+                <div id="options-container" class="space-y-1.5">
+                    <!-- Options -->
+                </div>
+                
+                <!-- NEW NEXT BUTTON CONTAINER (Inside Question Modal) -->
+                <div id="next-action-container" class="hidden mt-3 pt-2 border-t border-slate-200 dark:border-slate-800 animate-fade-in">
+                    <!-- Dynamic Button -->
+                </div>
+
+                <div id="finish-session-container" class="hidden mt-2 text-center">
+                    <button onclick="showSoloSummary()" class="text-[10px] font-bold text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded-lg transition-colors flex items-center justify-center gap-1 mx-auto">
+                        <i data-lucide="log-out" class="w-3 h-3"></i> Finish Early
+                    </button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Feedback Modal -->
-    <div id="feedback-modal" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4 pointer-events-none">
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6 max-w-sm w-full text-center border-2 transform scale-0 transition-transform duration-300 pointer-events-auto" id="feedback-content">
-            <div id="feedback-icon" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"></div>
-            <h3 id="feedback-title" class="text-2xl font-bold mb-2"></h3>
-            <p id="feedback-message" class="text-slate-500 dark:text-slate-400 text-sm mb-6"></p>
-            <button onclick="closeFeedback()" class="w-full py-2.5 rounded-lg font-bold transition-colors" id="feedback-btn">Continue</button>
         </div>
     </div>
 
     <!-- Winner Modal -->
-    <div id="winner-modal" class="hidden fixed inset-0 z-[90] bg-black/90 flex items-center justify-center p-4">
-        <div class="text-center animate-bounce-drop">
-            <div class="mb-6 flex justify-center">
-                <i data-lucide="trophy" class="w-24 h-24 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"></i>
+    <div id="winner-modal" class="hidden fixed inset-0 z-[90] bg-black/95 flex items-center justify-center p-4">
+        <div class="text-center animate-bounce-drop max-w-md w-full">
+            <div class="mb-4 relative inline-block">
+                <div class="absolute inset-0 bg-yellow-500 blur-2xl opacity-20 rounded-full"></div>
+                <i data-lucide="trophy" class="w-16 h-16 text-yellow-400 relative z-10 drop-shadow-2xl"></i>
             </div>
-            <h2 class="text-4xl md:text-6xl font-black text-white mb-2 tracking-tight">VICTORY!</h2>
-            <p id="winner-text" class="text-xl md:text-2xl text-slate-300 mb-8 font-light"></p>
-            
-            <button onclick="initGameSetup()" class="bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition-transform flex items-center gap-2 mx-auto">
-                <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+            <h2 id="winner-title" class="text-3xl font-black text-white mb-2 tracking-tight">VICTORY!</h2>
+            <p id="winner-text" class="text-lg text-slate-300 mb-2 font-light tracking-wide"></p>
+            <p id="winner-stats" class="text-sm text-medical-400 mb-6 font-bold hidden"></p>
+            <button onclick="initGameSetup()" class="bg-white text-slate-900 hover:bg-slate-100 px-6 py-2.5 rounded-full font-bold text-sm shadow-2xl hover:scale-105 transition-transform flex items-center gap-2 mx-auto">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                 Play Again
             </button>
         </div>
-        <!-- Confetti Canvas -->
         <canvas id="confetti" class="absolute inset-0 pointer-events-none"></canvas>
     </div>
 
     <script>
-        // --- 1. DATA STRUCTURES ---
-
         const PLAYERS_CONFIG = [
             { id: 1, name: "Red", colorClass: "bg-red-500", ringClass: "ring-red-500", textClass: "text-red-500", bgLight: "bg-red-100", bgDark: "bg-red-900/30" },
             { id: 2, name: "Yellow", colorClass: "bg-yellow-400", ringClass: "ring-yellow-400", textClass: "text-yellow-400", bgLight: "bg-yellow-100", bgDark: "bg-yellow-900/30" },
@@ -293,9 +329,8 @@
             { id: 6, name: "Orange", colorClass: "bg-orange-500", ringClass: "ring-orange-500", textClass: "text-orange-500", bgLight: "bg-orange-100", bgDark: "bg-orange-900/30" }
         ];
 
-        // NEW: DERMATOLOGY QUESTIONS
         const DERMATOLOGY_QUESTIONS = [
-{ q: "Ecthyma is:", options: ["Crusted impetigo", "Ulcerative impetigo", "Circinate impetigo", "Bullous impetigo", "None of the above"], correct: 1 },
+ { q: "Ecthyma is:", options: ["Crusted impetigo", "Ulcerative impetigo", "Circinate impetigo", "Bullous impetigo", "None of the above"], correct: 1 },
     { q: "Warts can be treated by all of the following EXCEPT:", options: ["Laser", "Cryotherapy", "Electrocautery", "Intralesional steroids", "Autosuggestion"], correct: 3 },
     { q: "Vulgaris means:", options: ["Serious", "Common", "Easily treated", "All of the above", "None of the above"], correct: 1 },
     { q: "Drug eruptions may be:", options: ["Eczematous", "Acneiform", "Pigmented", "All of the above", "None of the above"], correct: 3 },
@@ -717,6 +752,7 @@
     { q: "In acne vulgaris,", options: ["There is loss of melanocytes.", "The sebum composition is normal.", "There is colonization of pilosebaceous units by Strep. acnes.", "Lesions include comedones, vesicles and nodulocysts.", "There is increased proliferation of keratinocytes."], correct: 4 },
     { q: "One of the following lesions is NOT seen in acne vulgaris", options: ["Papule.", "Pustule.", "Cyst.", "Vesicle.", "Nodule."], correct: 3 },
     { q: "In acne vulgaris", options: ["The lesions are monomorphic, primary lesion is a comedone.", "The lesions are polymorphic, primary lesion is a cyst.", "The lesions are polymorphic, primary lesion is a comedone.", "The lesions are monomorphic, primary lesion is a pustule.", "The lesions are comedones, papules, vesicles, pustules & cysts."], correct: 2 },
+    // December 2023 (final 5th Year)
     { q: "A nodule is", options: ["The primary lesion of acne.", "A superficial lesion.", "Less than 1 cm in diameter.", "A cystic lesion.", "A dermal lesion."], correct: 4 },
     { q: "The following disease may involve the joints", options: ["Lichen planus.", "Pityriasis rosea.", "Psoriasis.", "Vitiligo.", "Seborrheic eczema."], correct: 2 },
     { q: "Hair loss is permanent and irreversible in", options: ["Cicatricial alopecia.", "Androgenetic alopecia.", "Telogen effluvium.", "Anagen effluvium.", "Alopecia areata."], correct: 0 },
@@ -1530,13 +1566,9 @@
     { q: "A 20-year old male patient had fever and a sore throat for which he received sulphamethoxasole-trimethoprim. The next day, he developed a violaceous macule on his lip. The most probable diagnosis is", options: ["Herpes simplex.", "Lichen planus.", "Discoid lupus erythematosus.", "Fixed drug eruption.", "Impetigo."], correct: 3 },
     { q: "27-year-old male develops a vesicobullous lesion on the glans soon after taking oral tetracycline. The lesion healed with hyperpigmentation. The diagnosis is", options: ["Herpes progenitalis.", "Fixed drug eruption.", "Genital warts.", "Genital molluscum.", "Chlamydia infection."], correct: 1 },
     { q: "Cutaneous drug reactions may present with the following EXCEPT", options: ["Acneform eruption.", "Lichenoid eruption.", "Neuralgia.", "Bullous eruption.", "Erythroderma."], correct: 2 }
-
         ];
 
-        // NEW: CLINICAL PATHOLOGY QUESTIONS
         const PATHOLOGY_QUESTIONS = [
-
- // Source: Clinical Pathology Exam 2024-192.pdf
   { "q": "All the following are clinical conditions that carry an increased likelihood of iron deficiency EXCEPT:", "options": ["Pregnancy", "Periods of rapid growth", "An intermittent history of blood loss", "Thalassemia"], "correct": 3 },
   { "q": "Diagnosis of sickle cell anemia is confirmed by:", "options": ["Hemoglobin electrophoresis", "Bone marrow aspiration", "Low reticulocyte response", "Increased haptoglobin"], "correct": 0 },
   { "q": "A characteristic feature of hereditary spherocytosis is:", "options": ["Profound microcytosis", "An increase in red cell osmotic fragility", "Decreased mean corpuscular hemoglobin concentration (MCHC)", "Intravascular hemolysis"], "correct": 1 },
@@ -2312,483 +2344,368 @@
   { "q": "All of the following organisms produce diarrhea except:", "options": ["Salmonella enteritidis", "Enteropathogenic E.coli", "Bifidibacterium", "Bacillus cereus", "Clostridium botulinum"], "correct": 2 },
   { "q": "Infantile diarrhea can be used by:", "options": ["Enteropathogenic E.coli", "Giardia", "Yersinia enterocolitica", "Vibrio cholera", "Rota virus"], "correct": 4 },
   { "q": "All of the following organism cause food poising except:", "options": ["Staphylococcus aurues", "Clostridium botulinum", "Bacillius cereus", "Salmonella enteritidis", "Salmonella typhi"], "correct": 4 }
-];
+        ];
+
 
         let state = {
+            gameMode: 'strategy',
             activePlayersCount: 2,
             activeColCount: 10,
-            selectedSpecialty: 'derma', // Default 'derma' or 'patho'
+            selectedSpecialty: 'derma',
+            questionLimit: 10,
             currentPlayerIndex: 0,
             board: [],
-            playerScores: {}, 
+            playerScores: {},
+            soloScore: 0,
+            soloTotal: 0,
             gameActive: false,
             questionQueue: [],
             pendingColumn: null,
             isSidebarOpen: true,
-            history: []
+            history: [],
+            currentQuestion: null,
+            currentResult: null,
+            currentSelection: null
         };
 
-        const ROWS = 10; 
-
-        // --- 2. LOGIC FUNCTIONS ---
-
+        const ROWS = 10;
         lucide.createIcons();
+
+        function selectGameMode(mode) {
+            state.gameMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                const iconBox = btn.querySelector('.icon-box'); 
+                const isSelected = btn.dataset.mode === mode;
+                if(isSelected) {
+                    btn.classList.add('bg-medical-50', 'dark:bg-medical-900/20', 'border-medical-500');
+                    btn.classList.remove('border-slate-200', 'dark:border-slate-700');
+                } else {
+                    btn.classList.remove('bg-medical-50', 'dark:bg-medical-900/20', 'border-medical-500');
+                    btn.classList.add('border-slate-200', 'dark:border-slate-700');
+                }
+            });
+            const strategyOpts = document.getElementById('strategy-options');
+            const limitOpts = document.getElementById('question-limit-options');
+            const startBtnText = document.getElementById('start-btn-text');
+            if(mode === 'solo') {
+                strategyOpts.classList.add('hidden');
+                limitOpts.classList.remove('hidden');
+                startBtnText.innerText = "Start Quiz";
+            } else {
+                strategyOpts.classList.remove('hidden');
+                limitOpts.classList.add('hidden');
+                startBtnText.innerText = "Start Game";
+            }
+        }
 
         function selectSpecialty(type) {
             state.selectedSpecialty = type;
-            // Visual Update
             document.querySelectorAll('.specialty-btn').forEach(btn => {
-                const iconBox = btn.querySelector('.icon-box'); // Target wrapper instead of 'i'
+                const iconWrapper = btn.querySelector('.icon-wrapper');
                 if(btn.dataset.type === type) {
-                    btn.classList.add('bg-medical-500', 'text-white', 'border-transparent');
-                    btn.classList.remove('border-slate-200', 'dark:border-slate-600');
-                    if(iconBox) {
-                        iconBox.classList.remove('text-slate-400');
-                        iconBox.classList.add('text-white');
-                    }
+                    btn.classList.add('bg-medical-600', 'text-white', 'border-transparent', 'shadow-md');
+                    btn.classList.remove('border-slate-200', 'dark:border-slate-700');
+                    if(iconWrapper) { iconWrapper.classList.remove('text-slate-400'); iconWrapper.classList.add('text-white'); }
                 } else {
-                    btn.classList.remove('bg-medical-500', 'text-white', 'border-transparent');
+                    btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent', 'shadow-md');
+                    btn.classList.add('border-slate-200', 'dark:border-slate-700');
+                    if(iconWrapper) { iconWrapper.classList.add('text-slate-400'); iconWrapper.classList.remove('text-white'); }
+                }
+            });
+        }
+
+        function selectQuestionLimit(limit) {
+            state.questionLimit = parseInt(limit);
+            document.querySelectorAll('.limit-btn').forEach(btn => {
+                if(parseInt(btn.dataset.limit) === state.questionLimit) {
+                    btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
+                    btn.classList.remove('border-slate-200', 'dark:border-slate-600');
+                } else {
+                    btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent');
                     btn.classList.add('border-slate-200', 'dark:border-slate-600');
-                    if(iconBox) {
-                        iconBox.classList.add('text-slate-400');
-                        iconBox.classList.remove('text-white');
-                    }
                 }
             });
         }
 
         function selectPlayerCount(count) {
             state.activePlayersCount = count;
-            updateBtnSelection('.player-btn', count);
+            document.querySelectorAll('.player-btn').forEach(btn => {
+                if(parseInt(btn.dataset.count) === count) {
+                    btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
+                    btn.classList.remove('border-slate-200', 'dark:border-slate-600');
+                } else {
+                    btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent');
+                    btn.classList.add('border-slate-200', 'dark:border-slate-600');
+                }
+            });
         }
 
         function selectGridWidth(cols) {
             state.activeColCount = cols;
-            updateBtnSelection('.grid-btn', cols, 'dataset.cols');
-        }
-
-        function updateBtnSelection(selector, value, datasetKey = 'dataset.count') {
-            document.querySelectorAll(selector).forEach(btn => {
-                const btnVal = parseInt(datasetKey.split('.').reduce((o, i) => o[i], btn));
-                if(btnVal === value) {
-                    btn.classList.add('bg-medical-500', 'text-white', 'border-transparent');
-                    btn.classList.remove('border-slate-200');
+            document.querySelectorAll('.grid-btn').forEach(btn => {
+                if(parseInt(btn.dataset.cols) === cols) {
+                    btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
+                    btn.classList.remove('border-slate-200', 'dark:border-slate-600');
                 } else {
-                    btn.classList.remove('bg-medical-500', 'text-white', 'border-transparent');
-                    btn.classList.add('border-slate-200');
+                    btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent');
+                    btn.classList.add('border-slate-200', 'dark:border-slate-600');
                 }
             });
         }
 
         function startGame() {
             document.getElementById('setup-modal').classList.add('hidden');
-            
-            // Logic to load correct questions
-            let selectedDB = [];
-            if (state.selectedSpecialty === 'patho') {
-                selectedDB = PATHOLOGY_QUESTIONS;
-            } else {
-                selectedDB = DERMATOLOGY_QUESTIONS;
-            }
-
-            state.board = Array(ROWS).fill().map(() => Array(state.activeColCount).fill(0));
-            state.currentPlayerIndex = 0;
-            state.gameActive = true;
-            
-            // Duplicate logic to ensure we have enough Qs (Optional, just shuffle existing sample)
-            // For now just shuffle the sample DB
-            state.questionQueue = [...selectedDB].sort(() => Math.random() - 0.5);
-            
+            let db = [];
+            if(state.selectedSpecialty === 'derma') db = [...DERMATOLOGY_QUESTIONS];
+            else if(state.selectedSpecialty === 'patho') db = [...PATHOLOGY_QUESTIONS];
+            else db = [...DERMATOLOGY_QUESTIONS, ...PATHOLOGY_QUESTIONS];
+            state.questionQueue = db.sort(() => Math.random() - 0.5);
             state.history = [];
-            state.playerScores = {};
-            for(let i=1; i<=state.activePlayersCount; i++) state.playerScores[i] = 0;
-
-            renderGrid();
-            renderSelectors();
-            renderScoreboard();
-            renderHeaders();
-            
+            state.gameActive = true;
             document.getElementById('history-container').innerHTML = '';
-        }
 
-        function initGameSetup() {
-            document.getElementById('winner-modal').classList.add('hidden');
-            document.getElementById('setup-modal').classList.remove('hidden');
-            
-            selectSpecialty('derma'); // Default
-            selectPlayerCount(2); 
-            selectGridWidth(10);
-            
-            state.isSidebarOpen = window.innerWidth >= 768; 
-            updateSidebarUI();
-        }
-
-        function toggleSidebar() {
-            state.isSidebarOpen = !state.isSidebarOpen;
-            updateSidebarUI();
-        }
-
-        function updateSidebarUI() {
-            const sb = document.getElementById('sidebar');
-            const main = document.getElementById('main-content');
-            const isDesktop = window.innerWidth >= 768;
-
-            if (state.isSidebarOpen) {
-                sb.classList.remove('-translate-x-full'); 
-                sb.classList.add('translate-x-0');
-                if (isDesktop) { main.classList.add('ml-80'); main.classList.remove('ml-0'); }
-                else { main.classList.remove('ml-80'); main.classList.add('ml-0'); }
+            if(state.gameMode === 'solo') {
+                state.soloScore = 0;
+                state.soloTotal = 0;
+                document.getElementById('strategy-ui').classList.add('hidden');
+                document.getElementById('solo-ui').classList.remove('hidden');
+                document.getElementById('solo-ui').classList.add('flex');
+                setTimeout(showQuestion, 300); 
             } else {
-                sb.classList.add('-translate-x-full'); 
-                sb.classList.remove('translate-x-0');
-                main.classList.remove('ml-80'); main.classList.add('ml-0');
+                state.currentPlayerIndex = 0;
+                state.board = Array(ROWS).fill().map(() => Array(state.activeColCount).fill(0));
+                state.playerScores = {};
+                for(let i=1; i<=state.activePlayersCount; i++) state.playerScores[i] = 0;
+                document.getElementById('solo-ui').classList.add('hidden');
+                document.getElementById('solo-ui').classList.remove('flex');
+                document.getElementById('strategy-ui').classList.remove('hidden');
+                renderGrid();
+                renderSelectors();
+                renderScoreboard();
+                renderHeaders();
             }
         }
 
-        window.addEventListener('resize', () => { updateSidebarUI(); });
-
-        function renderScoreboard() {
-            const container = document.getElementById('scoreboard');
-            container.innerHTML = '';
-
-            for(let i=0; i<state.activePlayersCount; i++) {
-                const player = PLAYERS_CONFIG[i];
-                const isTurn = i === state.currentPlayerIndex;
-                const score = state.playerScores[player.id];
-
-                const card = document.createElement('div');
-                let baseClasses = "flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all min-w-[90px] md:min-w-[110px]";
-                
-                if (isTurn) {
-                    card.className = `${baseClasses} bg-white dark:bg-slate-800 ${player.ringClass.replace('ring-', 'border-')} shadow-lg scale-105 z-10`;
-                } else {
-                    card.className = `${baseClasses} bg-slate-100 dark:bg-slate-800 border-transparent opacity-70 scale-95 grayscale-[0.5] hover:opacity-100`;
-                }
-
-                card.innerHTML = `
-                    <div class="w-3 h-3 rounded-full mb-1 ${player.colorClass}"></div>
-                    <span class="text-xs md:text-sm font-bold truncate w-full text-center ${player.textClass}">${player.name}</span>
-                    <span class="text-[10px] md:text-xs text-slate-500 font-medium bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full mt-1">
-                        ${score} pts
-                    </span>
-                `;
-                container.appendChild(card);
-            }
-        }
-
-        function renderGrid(newPieceCoords = null) {
-            const grid = document.getElementById('game-grid');
-            grid.style.gridTemplateColumns = `repeat(${state.activeColCount}, minmax(0, 1fr))`;
-            grid.innerHTML = '';
-            
-            for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < state.activeColCount; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 aspect-square rounded-full flex items-center justify-center transition-all duration-300 shadow-inner';
-                    
-                    const val = state.board[r][c];
-                    if (val === 0) {
-                        cell.classList.add('bg-blue-800/50', 'dark:bg-blue-950/50');
-                    } else {
-                        const player = PLAYERS_CONFIG.find(p => p.id === val);
-                        cell.classList.add(player.colorClass, 'shadow-lg');
-                        if (newPieceCoords && newPieceCoords.r === r && newPieceCoords.c === c) {
-                             cell.classList.add('animate-bounce-drop');
-                        }
-                    }
-                    cell.dataset.row = r;
-                    cell.dataset.col = c;
-                    grid.appendChild(cell);
-                }
-            }
-        }
-
-        // Render Column Headers (Numbers)
-        function renderHeaders() {
-            const container = document.getElementById('column-headers');
-            container.style.gridTemplateColumns = `repeat(${state.activeColCount}, minmax(0, 1fr))`;
-            container.innerHTML = '';
-
-            for(let c = 0; c < state.activeColCount; c++) {
-                const header = document.createElement('div');
-                header.className = 'text-xs md:text-sm font-bold text-slate-400 dark:text-slate-500';
-                header.innerText = c + 1;
-                container.appendChild(header);
-            }
-        }
-
-        function renderSelectors() {
-            const container = document.getElementById('column-selectors');
-            container.style.gridTemplateColumns = `repeat(${state.activeColCount}, minmax(0, 1fr))`;
-            container.innerHTML = '';
-            for(let c = 0; c < state.activeColCount; c++) {
-                const colDiv = document.createElement('div');
-                colDiv.className = 'cursor-pointer hover:bg-white/10 dark:hover:bg-white/5 transition-colors duration-200 rounded-full h-full';
-                colDiv.onclick = () => handleColumnClick(c);
-                container.appendChild(colDiv);
-            }
-        }
-
-        function handleColumnClick(colIndex) {
-            if (!state.gameActive) return;
-            if (state.board[0][colIndex] !== 0) return; 
-            state.pendingColumn = colIndex;
-            showQuestion();
-        }
-
-        function showQuestion() {
-            // Check if queue empty, reload based on category
-            if(state.questionQueue.length === 0) {
-                let selectedDB = (state.selectedSpecialty === 'patho') ? PATHOLOGY_QUESTIONS : DERMATOLOGY_QUESTIONS;
-                state.questionQueue = [...selectedDB].sort(() => Math.random() - 0.5);
-            }
-            
-            const question = state.questionQueue.shift();
-            const player = PLAYERS_CONFIG[state.currentPlayerIndex];
-            const modal = document.getElementById('question-modal');
-            
-            document.getElementById('modal-title').innerText = state.selectedSpecialty === 'patho' ? "Clinical Pathology" : "Dermatology";
-            document.getElementById('modal-subtitle').innerText = "For";
-            document.getElementById('modal-subtitle').classList.remove('hidden');
-            document.getElementById('q-player-badge').classList.remove('hidden');
-            document.getElementById('close-review-btn').classList.add('hidden'); 
-
-            document.getElementById('q-player-badge').innerText = player.name;
-            document.getElementById('q-player-badge').className = `px-2 py-0.5 rounded text-xs font-bold ${player.bgLight} ${player.textClass.replace('text-', 'text-').replace('400','600').replace('500','700')}`;
-            document.getElementById('question-text').innerText = question.q;
-            
-            const optsContainer = document.getElementById('options-container');
-            optsContainer.innerHTML = '';
-            question.options.forEach((opt, idx) => {
+        function renderQuestionModal(question) {
+             const modal = document.getElementById('question-modal');
+             let title = state.selectedSpecialty === 'mixed' ? 'Mixed' : 
+                       (state.selectedSpecialty === 'derma' ? 'Dermatology' : 'Pathology');
+             document.getElementById('modal-title').innerText = title;
+             
+             // Setup Buttons
+             const optsContainer = document.getElementById('options-container');
+             optsContainer.innerHTML = '';
+             question.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-3 group";
-                btn.innerHTML = `
-                    <span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-bold group-hover:bg-medical-500 group-hover:text-white transition-colors">${String.fromCharCode(65+idx)}</span>
-                    <span class="text-slate-700 dark:text-slate-200 font-medium">${opt}</span>
-                `;
+                btn.id = `opt-btn-${idx}`;
+                btn.className = "w-full text-left p-2 rounded-lg border-2 border-slate-100 dark:border-slate-800 hover:border-medical-500 hover:bg-medical-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2 group";
+                btn.innerHTML = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold group-hover:bg-medical-500 group-hover:text-white transition-colors">${String.fromCharCode(65+idx)}</span><span class="text-xs font-medium text-slate-700 dark:text-slate-200 group-hover:text-medical-700 dark:group-hover:text-white">${opt}</span>`;
                 btn.onclick = () => submitAnswer(idx, question);
                 optsContainer.appendChild(btn);
             });
 
+             // Visibility Logic
+             const liveStats = document.getElementById('solo-live-stats');
+             const finishBtn = document.getElementById('finish-session-container');
+             const qPlayerBadge = document.getElementById('q-player-badge');
+             const player = PLAYERS_CONFIG[state.currentPlayerIndex];
+
+             if(state.gameMode === 'solo') {
+                qPlayerBadge.classList.add('hidden');
+                liveStats.classList.remove('hidden');
+                liveStats.classList.add('flex');
+                finishBtn.classList.remove('hidden');
+                let limitText = state.questionLimit === 999 ? '∞' : state.questionLimit;
+                let acc = state.soloTotal > 0 ? Math.round((state.soloScore / state.soloTotal) * 100) : 100;
+                document.getElementById('live-progress-text').innerText = `${state.soloTotal + 1}/${limitText}`;
+                document.getElementById('live-score-text').innerText = state.soloScore;
+                document.getElementById('live-accuracy-text').innerText = `${acc}%`;
+            } else {
+                qPlayerBadge.classList.remove('hidden');
+                liveStats.classList.add('hidden');
+                liveStats.classList.remove('flex');
+                finishBtn.classList.add('hidden');
+                document.getElementById('q-player-badge').innerText = `${player.name}`;
+                document.getElementById('q-player-badge').className = `px-2 py-0.5 rounded-full text-[9px] font-bold ${player.bgLight} ${player.textClass}`;
+            }
+
+            document.getElementById('close-review-btn').classList.add('hidden');
+            document.getElementById('question-text').innerText = question.q;
+            
+            // Hide next button initially
+            document.getElementById('next-action-container').classList.add('hidden');
+            document.getElementById('next-action-container').innerHTML = '';
+
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('question-card').classList.remove('scale-95');
-                document.getElementById('question-card').classList.add('scale-100');
-            }, 10);
+            setTimeout(() => document.getElementById('question-card').classList.remove('scale-95'), 10);
         }
 
-        function reviewMove(historyIndex) {
-            const moveData = state.history[historyIndex];
-            if (!moveData) return;
-
-            const modal = document.getElementById('question-modal');
-            const q = moveData.questionObj;
-
-            document.getElementById('modal-title').innerText = "HISTORY REVIEW";
-            document.getElementById('modal-subtitle').classList.add('hidden'); 
-            document.getElementById('q-player-badge').classList.add('hidden'); 
-            document.getElementById('close-review-btn').classList.remove('hidden'); 
-
-            document.getElementById('question-text').innerText = q.q;
+        function showQuestion() {
+            if (state.gameMode === 'solo' && state.soloTotal >= state.questionLimit && state.questionLimit !== 999) {
+                showSoloSummary();
+                return;
+            }
+            if(state.questionQueue.length === 0) {
+                let db = [];
+                if(state.selectedSpecialty === 'derma') db = [...DERMATOLOGY_QUESTIONS];
+                else if(state.selectedSpecialty === 'patho') db = [...PATHOLOGY_QUESTIONS];
+                else db = [...DERMATOLOGY_QUESTIONS, ...PATHOLOGY_QUESTIONS];
+                state.questionQueue = db.sort(() => Math.random() - 0.5);
+            }
+            state.currentQuestion = state.questionQueue.shift();
+            state.currentResult = null;
+            state.currentSelection = null;
             
+            renderQuestionModal(state.currentQuestion);
+        }
+
+        function updateAnswerUI(selectedIndex, question, isCorrect) {
             const optsContainer = document.getElementById('options-container');
-            optsContainer.innerHTML = '';
+            const buttons = optsContainer.querySelectorAll('button');
+            const player = PLAYERS_CONFIG[state.currentPlayerIndex];
             
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                let btnClasses = "w-full text-left p-4 rounded-xl border transition-colors flex items-center gap-3 cursor-default ";
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:border-medical-500', 'hover:bg-medical-50', 'dark:hover:bg-slate-800');
                 
-                if (idx === q.correct) {
-                    btnClasses += "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-300";
-                    btn.innerHTML = `
-                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-green-500 text-white text-xs font-bold"><i data-lucide="check" class="w-3 h-3"></i></span>
-                        <span class="font-bold">${opt}</span>
-                    `;
-                } else if (idx === moveData.selectedIndex && !moveData.isCorrect) {
-                    btnClasses += "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-300";
-                    btn.innerHTML = `
-                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold"><i data-lucide="x" class="w-3 h-3"></i></span>
-                        <span class="font-bold">${opt}</span>
-                    `;
+                if (idx === question.correct) {
+                    btn.classList.remove('border-slate-100', 'dark:border-slate-800');
+                    btn.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+                     const iconSpan = btn.querySelector('span:first-child');
+                     iconSpan.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i>`;
+                     iconSpan.classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-600');
+                     iconSpan.classList.add('bg-green-500', 'text-white');
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.classList.remove('border-slate-100', 'dark:border-slate-800');
+                    btn.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+                    const iconSpan = btn.querySelector('span:first-child');
+                    iconSpan.innerHTML = `<i data-lucide="x" class="w-3 h-3"></i>`;
+                    iconSpan.classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-600');
+                    iconSpan.classList.add('bg-red-500', 'text-white');
                 } else {
-                    btnClasses += "border-slate-200 dark:border-slate-700 opacity-50";
-                    btn.innerHTML = `
-                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-bold">${String.fromCharCode(65+idx)}</span>
-                        <span>${opt}</span>
-                    `;
+                    btn.classList.add('opacity-50');
                 }
-
-                btn.className = btnClasses;
-                btn.disabled = true; 
-                optsContainer.appendChild(btn);
             });
 
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('question-card').classList.remove('scale-95');
-                document.getElementById('question-card').classList.add('scale-100');
-            }, 10);
+            // Prepare Next Action Button
+            const nextContainer = document.getElementById('next-action-container');
+            nextContainer.innerHTML = '';
+            const nextBtn = document.createElement('button');
             
+            if (state.gameMode === 'solo') {
+                nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-medical-600 hover:bg-medical-700";
+                nextBtn.innerHTML = `<span>Next Question</span><i data-lucide="arrow-right" class="w-3 h-3"></i>`;
+                nextBtn.onclick = () => {
+                   document.getElementById('question-card').classList.add('scale-95');
+                   setTimeout(() => showQuestion(), 150);
+                };
+            } else {
+                if (isCorrect) {
+                    nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700";
+                    nextBtn.innerHTML = `<span>Drop Piece</span><i data-lucide="arrow-down-to-line" class="w-3 h-3"></i>`;
+                    nextBtn.onclick = () => {
+                         document.getElementById('question-card').classList.add('scale-95');
+                         setTimeout(() => {
+                             document.getElementById('question-modal').classList.add('hidden');
+                             dropPiece(state.pendingColumn);
+                         }, 150);
+                    };
+                } else {
+                    nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-slate-600 hover:bg-slate-700";
+                    nextBtn.innerHTML = `<span>End Turn</span><i data-lucide="skip-forward" class="w-3 h-3"></i>`;
+                    nextBtn.onclick = () => {
+                         document.getElementById('question-card').classList.add('scale-95');
+                         setTimeout(() => {
+                             document.getElementById('question-modal').classList.add('hidden');
+                             switchTurn();
+                         }, 150);
+                    };
+                }
+            }
+            nextContainer.appendChild(nextBtn);
+            nextContainer.classList.remove('hidden');
             lucide.createIcons();
-        }
-
-        function closeReviewModal() {
-            document.getElementById('question-card').classList.remove('scale-100');
-            document.getElementById('question-card').classList.add('scale-95');
-            setTimeout(() => { document.getElementById('question-modal').classList.add('hidden'); }, 200);
         }
 
         function submitAnswer(selectedIndex, questionObj) {
             const isCorrect = selectedIndex === questionObj.correct;
             const player = PLAYERS_CONFIG[state.currentPlayerIndex];
             
-            document.getElementById('question-card').classList.remove('scale-100');
-            document.getElementById('question-card').classList.add('scale-95');
-            setTimeout(() => { document.getElementById('question-modal').classList.add('hidden'); }, 200);
+            // Record result locally
+            state.currentResult = isCorrect ? 'correct' : 'incorrect';
+            state.currentSelection = selectedIndex;
 
             addToHistory(player, questionObj, selectedIndex, isCorrect);
-
-            if (isCorrect) {
-                state.playerScores[player.id]++;
-                renderScoreboard(); 
-                showFeedback(true, "Correct!", "Preparing to drop piece...");
-                setTimeout(() => {
-                    closeFeedback();
-                    dropPiece(state.pendingColumn);
-                }, 700); 
+            
+            if (state.gameMode === 'solo') {
+                if(isCorrect) { state.soloScore++; }
+                state.soloTotal++;
             } else {
-                const correctTxt = questionObj.options[questionObj.correct];
-                showFeedback(false, "Incorrect", `Correct answer: ${correctTxt}`);
+                if(isCorrect) { 
+                    state.playerScores[player.id]++;
+                    renderScoreboard();
+                }
             }
+            
+            updateAnswerUI(selectedIndex, questionObj, isCorrect);
         }
 
-        function showFeedback(isSuccess, title, msg) {
-            const modal = document.getElementById('feedback-modal');
-            const content = document.getElementById('feedback-content');
-            const icon = document.getElementById('feedback-icon');
-            const btn = document.getElementById('feedback-btn');
-
+        function showSoloSummary() {
+            document.getElementById('question-modal').classList.add('hidden');
+            const modal = document.getElementById('winner-modal');
+            const title = document.getElementById('winner-title');
+            const text = document.getElementById('winner-text');
+            const stats = document.getElementById('winner-stats');
+            title.innerText = "Complete";
+            text.innerText = "Session finished.";
+            const percentage = state.soloTotal > 0 ? Math.round((state.soloScore / state.soloTotal) * 100) : 0;
+            stats.innerText = `Score: ${state.soloScore}/${state.soloTotal} (${percentage}%)`;
+            stats.classList.remove('hidden');
             modal.classList.remove('hidden');
-            setTimeout(() => content.classList.remove('scale-0'), 10);
-
-            document.getElementById('feedback-title').innerText = title;
-            document.getElementById('feedback-message').innerText = msg;
-
-            if (isSuccess) {
-                content.className = "bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6 max-w-sm w-full text-center border-2 border-green-500 transform transition-transform duration-300 pointer-events-auto";
-                icon.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl bg-green-100 text-green-600";
-                icon.innerHTML = '<i data-lucide="check"></i>';
-                btn.style.display = 'none'; 
-            } else {
-                content.className = "bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6 max-w-sm w-full text-center border-2 border-red-500 transform transition-transform duration-300 pointer-events-auto";
-                icon.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl bg-red-100 text-red-600";
-                icon.innerHTML = '<i data-lucide="x"></i>';
-                btn.style.display = 'block'; 
-            }
-            lucide.createIcons();
         }
 
-        function closeFeedback() {
-            document.getElementById('feedback-modal').classList.add('hidden');
-            document.getElementById('feedback-content').classList.add('scale-0');
-            if (document.getElementById('feedback-btn').style.display !== 'none') {
-                switchTurn();
-            }
+        function handleColumnClick(c) {
+            if(!state.gameActive || state.gameMode === 'solo') return; 
+            if(state.board[0][c] !== 0) return;
+            state.pendingColumn = c;
+            showQuestion();
         }
 
         function dropPiece(col) {
             let r = ROWS - 1;
-            while (r >= 0) {
-                if (state.board[r][col] === 0) {
+            while(r >= 0) {
+                if(state.board[r][col] === 0) {
                     state.board[r][col] = PLAYERS_CONFIG[state.currentPlayerIndex].id;
                     break;
                 }
                 r--;
             }
-            renderGrid({r: r, c: col});
-            if (checkWin(r, col)) {
-                handleWin();
-            } else {
-                switchTurn();
-            }
+            renderGrid({r, c: col});
+            if(checkWin(r, col)) handleWin();
+            else switchTurn();
         }
 
         function switchTurn() {
             state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.activePlayersCount;
-            renderScoreboard(); 
-        }
-
-        function addToHistory(player, questionObj, selectedIndex, isCorrect) {
-            state.history.push({
-                player: player,
-                questionObj: questionObj,
-                selectedIndex: selectedIndex,
-                isCorrect: isCorrect,
-                timestamp: new Date()
-            });
-            const historyIndex = state.history.length - 1;
-
-            const container = document.getElementById('history-container');
-            const entry = document.createElement('div');
-            
-            entry.onclick = () => reviewMove(historyIndex);
-            entry.className = `p-3 rounded-lg border-l-4 ${isCorrect ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-red-500 bg-red-50 dark:bg-red-900/20'} text-sm cursor-pointer hover:opacity-80 transition-opacity relative group`;
-            
-            let answerDetails = "";
-            if (isCorrect) {
-                answerDetails = `<div class="mt-2 text-xs font-semibold text-green-700 dark:text-green-300">
-                    <span class="block text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Answer</span>
-                    ${questionObj.options[selectedIndex]}
-                </div>`;
-            } else {
-                answerDetails = `<div class="mt-2 grid gap-1.5">
-                    <div class="text-xs font-semibold text-red-700 dark:text-red-300">
-                        <span class="block text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Selected</span>
-                        <i data-lucide="x" class="inline w-3 h-3 mr-1"></i>${questionObj.options[selectedIndex]}
-                    </div>
-                    <div class="text-xs font-semibold text-green-700 dark:text-green-300">
-                        <span class="block text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Correct</span>
-                        <i data-lucide="check" class="inline w-3 h-3 mr-1"></i>${questionObj.options[questionObj.correct]}
-                    </div>
-                </div>`;
-            }
-
-            entry.innerHTML = `
-                <div class="flex justify-between items-start mb-1">
-                    <span class="font-bold text-xs ${player.textClass}">${player.name}</span>
-                    <span class="text-xs text-slate-400">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                </div>
-                <p class="text-slate-700 dark:text-slate-300 font-medium mb-1 line-clamp-2 leading-tight">${questionObj.q}</p>
-                ${answerDetails}
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-slate-800 rounded-full p-1 shadow-sm">
-                    <i data-lucide="eye" class="w-3 h-3 text-slate-500"></i>
-                </div>
-            `;
-            container.prepend(entry);
-            lucide.createIcons();
+            renderScoreboard();
         }
 
         function checkWin(r, c) {
-            const player = state.board[r][c];
-            if (player === 0) return false;
-            const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
-            for (let [dr, dc] of directions) {
+            const p = state.board[r][c];
+            const dirs = [[0,1], [1,0], [1,1], [1,-1]];
+            for(let [dr, dc] of dirs) {
                 let count = 1;
-                let i = 1;
-                while (true) {
-                    const nr = r + dr * i;
-                    const nc = c + dc * i;
-                    if (nr < 0 || nr >= ROWS || nc < 0 || nc >= state.activeColCount || state.board[nr][nc] !== player) break;
-                    count++; i++;
+                for(let i=1; i<4; i++) {
+                    const nr = r + dr*i, nc = c + dc*i;
+                    if(nr<0||nr>=ROWS||nc<0||nc>=state.activeColCount||state.board[nr][nc]!==p) break;
+                    count++;
                 }
-                i = 1;
-                while (true) {
-                    const nr = r - dr * i;
-                    const nc = c - dc * i;
-                    if (nr < 0 || nr >= ROWS || nc < 0 || nc >= state.activeColCount || state.board[nr][nc] !== player) break;
-                    count++; i++;
+                for(let i=1; i<4; i++) {
+                    const nr = r - dr*i, nc = c - dc*i;
+                    if(nr<0||nr>=ROWS||nc<0||nc>=state.activeColCount||state.board[nr][nc]!==p) break;
+                    count++;
                 }
-                if (count >= 4) return true;
+                if(count >= 4) return true;
             }
             return false;
         }
@@ -2796,17 +2713,193 @@
         function handleWin() {
             state.gameActive = false;
             const player = PLAYERS_CONFIG[state.currentPlayerIndex];
-            const txt = document.getElementById('winner-text');
-            txt.innerText = `${player.name} Team wins!`;
-            txt.className = `text-xl md:text-2xl mb-8 font-light ${player.textClass}`;
+            document.getElementById('winner-title').innerText = "VICTORY!";
+            document.getElementById('winner-text').innerText = `${player.name} Wins!`;
+            document.getElementById('winner-stats').classList.add('hidden');
             document.getElementById('winner-modal').classList.remove('hidden');
         }
 
-        function toggleTheme() {
-            document.querySelector('html').classList.toggle('dark');
+        // Updated RenderGrid for Ultra Compact Sizes
+        function renderGrid(animPos = null) {
+            const grid = document.getElementById('game-grid');
+            grid.style.gridTemplateColumns = `repeat(${state.activeColCount}, minmax(0, 1fr))`;
+            grid.innerHTML = '';
+            for(let r=0; r<ROWS; r++) {
+                for(let c=0; c<state.activeColCount; c++) {
+                    const cell = document.createElement('div');
+                    // Much smaller sizes: base w-5 h-5 (20px), md w-7 h-7 (28px)
+                    cell.className = "w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 aspect-square rounded-full flex items-center justify-center shadow-inner transition-all duration-300";
+                    const val = state.board[r][c];
+                    if(val === 0) cell.classList.add('bg-blue-800/50', 'dark:bg-blue-950/50');
+                    else {
+                        const p = PLAYERS_CONFIG.find(x => x.id === val);
+                        cell.classList.add(p.colorClass, 'shadow-lg');
+                        if(animPos && animPos.r === r && animPos.c === c) cell.classList.add('animate-bounce-drop');
+                    }
+                    grid.appendChild(cell);
+                }
+            }
         }
 
+        function renderHeaders() {
+            const h = document.getElementById('column-headers');
+            h.style.gridTemplateColumns = `repeat(${state.activeColCount}, minmax(0, 1fr))`;
+            h.innerHTML = '';
+            for(let i=0; i<state.activeColCount; i++) {
+                const el = document.createElement('div');
+                el.className = "text-[9px] font-bold text-white/50";
+                el.innerText = i+1;
+                h.appendChild(el);
+            }
+        }
+
+        function renderSelectors() {
+            const s = document.getElementById('column-selectors');
+            s.style.gridTemplateColumns = `repeat(${state.activeColCount}, minmax(0, 1fr))`;
+            s.innerHTML = '';
+            for(let c=0; c<state.activeColCount; c++) {
+                const el = document.createElement('div');
+                el.className = "cursor-pointer hover:bg-white/10 transition-colors rounded-full h-full";
+                el.onclick = () => handleColumnClick(c);
+                s.appendChild(el);
+            }
+        }
+
+        function renderScoreboard() {
+            const sb = document.getElementById('scoreboard');
+            sb.innerHTML = '';
+            for(let i=0; i<state.activePlayersCount; i++) {
+                const p = PLAYERS_CONFIG[i];
+                const active = i === state.currentPlayerIndex;
+                const score = state.playerScores[p.id];
+                const card = document.createElement('div');
+                // Compact scoreboard items
+                card.className = `flex flex-col items-center justify-center p-1.5 rounded-lg border-2 transition-all min-w-[60px] ${active ? 'bg-white dark:bg-slate-800 scale-105 shadow-xl z-10 '+p.ringClass.replace('ring-','border-') : 'bg-slate-100 dark:bg-slate-800/50 border-transparent opacity-60 scale-95'}`;
+                card.innerHTML = `<div class="w-2 h-2 rounded-full mb-0.5 ${p.colorClass}"></div><span class="text-[10px] font-bold ${p.textClass}">${p.name}</span><span class="text-[9px] font-bold bg-slate-200 dark:bg-slate-700 px-1 py-0 rounded mt-0.5 text-slate-600 dark:text-slate-300">${score}</span>`;
+                sb.appendChild(card);
+            }
+        }
+
+        function addToHistory(player, q, idx, correct) {
+            state.history.push({ player, q, idx, correct });
+            const currentIndex = state.history.length - 1; 
+            const list = document.getElementById('history-container');
+            if(state.history.length === 1) list.innerHTML = ''; 
+            const item = document.createElement('div');
+            item.onclick = () => reviewMove(currentIndex); 
+            item.className = `p-2 rounded border-l-2 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all cursor-pointer group relative ${correct ? 'border-green-500' : 'border-red-500'}`;
+            const headerText = state.gameMode === 'solo' ? `Q${state.soloTotal}` : player.name;
+            const headerColor = state.gameMode === 'solo' ? 'text-slate-500' : player.textClass;
+            item.innerHTML = `<div class="flex justify-between mb-0.5"><span class="font-bold text-[9px] ${headerColor}">${headerText}</span><span class="text-[8px] text-slate-400">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div><p class="text-[10px] font-medium text-slate-700 dark:text-slate-200 line-clamp-2 mb-0.5">${q.q}</p><div class="flex items-center gap-1"><span class="px-1 py-0 rounded text-[8px] font-bold ${correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${correct ? 'Yes' : 'No'}</span></div><div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-medical-500"><i data-lucide="eye" class="w-3 h-3"></i></div>`;
+            list.prepend(item);
+            lucide.createIcons();
+        }
+
+        function reviewMove(idx) {
+            const data = state.history[idx];
+            const modal = document.getElementById('question-modal');
+            document.getElementById('modal-title').innerText = "Review";
+            document.getElementById('q-player-badge').classList.add('hidden');
+            document.getElementById('solo-live-stats').classList.add('hidden');
+            document.getElementById('finish-session-container').classList.add('hidden');
+            document.getElementById('close-review-btn').classList.remove('hidden');
+            document.getElementById('question-text').innerText = data.q.q;
+            const cont = document.getElementById('options-container');
+            cont.innerHTML = '';
+            
+            // Hide the Next action container during review
+            document.getElementById('next-action-container').classList.add('hidden');
+
+            data.q.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                let cls = "w-full text-left p-2 rounded-lg border-2 transition-colors flex items-center gap-2 cursor-default ";
+                let icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold">${String.fromCharCode(65+i)}</span>`;
+                
+                if(i === data.q.correct) {
+                    cls += "border-green-500 bg-green-50 dark:bg-green-900/30";
+                    icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-green-500 text-white"><i data-lucide="check" class="w-3 h-3"></i></span>`;
+                } else if(i === data.idx && !data.correct) {
+                    cls += "border-red-500 bg-red-50 dark:bg-red-900/30";
+                    icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white"><i data-lucide="x" class="w-3 h-3"></i></span>`;
+                } else {
+                    cls += "border-slate-200 dark:border-slate-700 opacity-60"; 
+                }
+                
+                btn.className = cls;
+                btn.innerHTML = `${icon}<span class="text-xs font-medium text-slate-700 dark:text-slate-200">${opt}</span>`;
+                cont.appendChild(btn);
+            });
+            modal.classList.remove('hidden');
+            setTimeout(() => document.getElementById('question-card').classList.remove('scale-95'), 10);
+            lucide.createIcons();
+        }
+
+        function closeReviewModal() {
+            // Smart closing logic: if in active solo session, restore the active question
+            if(state.gameMode === 'solo' && state.gameActive && state.currentQuestion) {
+                 renderQuestionModal(state.currentQuestion);
+                 // Restore answered state if applicable
+                 if(state.currentResult) {
+                     const isCorrect = state.currentResult === 'correct';
+                     updateAnswerUI(state.currentSelection, state.currentQuestion, isCorrect);
+                 }
+            } else {
+                document.getElementById('question-card').classList.add('scale-95');
+                setTimeout(() => document.getElementById('question-modal').classList.add('hidden'), 200);
+            }
+        }
+
+        // New Resume function just in case
+        function resumeGame() {
+            if(state.currentQuestion) {
+                renderQuestionModal(state.currentQuestion);
+                 if(state.currentResult) {
+                     const isCorrect = state.currentResult === 'correct';
+                     updateAnswerUI(state.currentSelection, state.currentQuestion, isCorrect);
+                 }
+            } else {
+                showQuestion();
+            }
+        }
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const main = document.getElementById('main-content');
+            if(window.innerWidth >= 768) {
+                if(state.isSidebarOpen) {
+                    sb.classList.add('-translate-x-full');
+                    main.classList.remove('ml-56'); main.classList.add('ml-0');
+                } else {
+                    sb.classList.remove('-translate-x-full');
+                    main.classList.add('ml-56'); main.classList.remove('ml-0');
+                }
+            } else {
+                sb.classList.toggle('-translate-x-full');
+            }
+            state.isSidebarOpen = !state.isSidebarOpen;
+        }
+
+        function initGameSetup() {
+            document.getElementById('winner-modal').classList.add('hidden');
+            document.getElementById('setup-modal').classList.remove('hidden');
+            selectGameMode('strategy');
+            selectSpecialty('derma');
+            selectPlayerCount(2);
+            selectGridWidth(10);
+            selectQuestionLimit(10);
+            state.isSidebarOpen = window.innerWidth >= 768;
+            const sb = document.getElementById('sidebar');
+            const main = document.getElementById('main-content');
+            if(state.isSidebarOpen) {
+                sb.classList.remove('-translate-x-full');
+                main.classList.add('ml-56'); main.classList.remove('ml-0');
+            }
+        }
+
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
+
         initGameSetup();
+
     </script>
 </body>
 </html>
