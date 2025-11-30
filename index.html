@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2PD3975NL9"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2PD3975NL9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-2PD3975NL9');
-</script>
+      gtag('config', 'G-2PD3975NL9');
+    </script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Embedded SVG Favicon (Blue Heartbeat) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230ea5e9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-4l-3 9L9 3l-3 9H2'/%3E%3C/svg%3E">
     <title>Med-Connect Ultimate</title>
+    
+
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -80,6 +85,13 @@
 
     <!-- Sidebar -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-[75] w-56 bg-white dark:bg-slate-900 shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col border-r border-slate-200 dark:border-slate-800">
+        <!-- Review History Button (Sidebar - Top Position) -->
+        <div id="sidebar-review-container" class="transition-all duration-500 ease-in-out overflow-hidden max-h-0 opacity-0 px-2 bg-slate-50 dark:bg-slate-900/50">
+             <button onclick="openReviewHistory()" class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-2 text-xs my-2 shadow-sm border border-slate-300 dark:border-slate-700">
+                <span>Review History</span>
+            </button>
+        </div>
+
         <div class="p-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 h-12">
             <h2 class="text-sm font-bold flex items-center gap-2 text-slate-800 dark:text-white">
                 <i data-lucide="history" class="w-4 h-4 text-medical-500"></i>
@@ -89,6 +101,7 @@
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
+        
         <div id="history-container" class="flex-1 overflow-y-auto p-1.5 space-y-1.5 no-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
             <div class="text-center text-slate-400 text-[10px] mt-10 italic">No questions answered yet.</div>
         </div>
@@ -111,7 +124,9 @@
                     <div>
                         <h1 class="font-bold text-sm leading-tight hidden sm:block">Med-Connect <span class="text-medical-500">Ultimate</span></h1>
                         <h1 class="font-bold text-sm leading-tight sm:hidden">Med-Connect</h1>
-                        <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider hidden sm:block">Dr. Mohamed's Edition</p>
+                        <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider hidden sm:block">
+                            Dr. Mohamed's Edition <span class="text-green-500 ml-1">• Ready</span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -204,18 +219,18 @@
                 <div class="space-y-1.5">
                     <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Mode</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <button onclick="selectGameMode('strategy')" class="mode-btn group relative p-2 rounded-lg border-2 transition-all text-left flex flex-col justify-between h-full" data-mode="strategy">
-                            <i data-lucide="grid-3x3" class="w-4 h-4 text-slate-500 mb-1"></i>
-                            <div>
-                                <span class="font-bold text-[9px] block text-slate-700 dark:text-slate-200">Connect 4</span>
-                                <p class="text-[7px] text-slate-400 leading-tight">Strategy</p>
-                            </div>
-                        </button>
                         <button onclick="selectGameMode('solo')" class="mode-btn group relative p-2 rounded-lg border-2 transition-all text-left flex flex-col justify-between h-full" data-mode="solo">
                             <i data-lucide="book-open" class="w-4 h-4 text-slate-500 mb-1"></i>
                             <div>
                                 <span class="font-bold text-[9px] block text-slate-700 dark:text-slate-200">Solo</span>
                                 <p class="text-[7px] text-slate-400 leading-tight">Quiz</p>
+                            </div>
+                        </button>
+                        <button onclick="selectGameMode('strategy')" class="mode-btn group relative p-2 rounded-lg border-2 transition-all text-left flex flex-col justify-between h-full" data-mode="strategy">
+                            <i data-lucide="grid-3x3" class="w-4 h-4 text-slate-500 mb-1"></i>
+                            <div>
+                                <span class="font-bold text-[9px] block text-slate-700 dark:text-slate-200">Connect 4</span>
+                                <p class="text-[7px] text-slate-400 leading-tight">Strategy</p>
                             </div>
                         </button>
                          <button onclick="selectGameMode('millionaire')" class="mode-btn group relative p-2 rounded-lg border-2 transition-all text-left flex flex-col justify-between h-full" data-mode="millionaire">
@@ -231,6 +246,10 @@
                 <div class="space-y-1.5">
                     <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Topic</label>
                     <div class="grid grid-cols-3 gap-1.5">
+                        <button onclick="selectSpecialty('mixed')" class="specialty-btn py-1.5 px-1 rounded-lg border-2 transition-all flex flex-col items-center gap-0.5" data-type="mixed">
+                            <i data-lucide="layers" class="w-3 h-3 text-slate-400 icon-wrapper"></i>
+                            <span class="text-[9px] font-bold">Mixed</span>
+                        </button>
                         <button onclick="selectSpecialty('derma')" class="specialty-btn py-1.5 px-1 rounded-lg border-2 transition-all flex flex-col items-center gap-0.5" data-type="derma">
                             <i data-lucide="scan-face" class="w-3 h-3 text-slate-400 icon-wrapper"></i>
                             <span class="text-[9px] font-bold">Derma</span>
@@ -239,10 +258,20 @@
                             <i data-lucide="microscope" class="w-3 h-3 text-slate-400 icon-wrapper"></i>
                             <span class="text-[9px] font-bold">Patho</span>
                         </button>
-                        <button onclick="selectSpecialty('mixed')" class="specialty-btn py-1.5 px-1 rounded-lg border-2 transition-all flex flex-col items-center gap-0.5" data-type="mixed">
-                            <i data-lucide="layers" class="w-3 h-3 text-slate-400 icon-wrapper"></i>
-                            <span class="text-[9px] font-bold">Mixed</span>
-                        </button>
+                    </div>
+                </div>
+
+                <!-- PROGRESS BAR SECTION -->
+                <div id="bank-progress-container" class="hidden space-y-1.5 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Bank Progress</label>
+                        <span id="bank-stats-text" class="text-[9px] font-bold text-medical-600 dark:text-medical-400">0/0</span>
+                    </div>
+                    <div class="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div id="bank-progress-bar" class="h-full bg-medical-500 transition-all duration-500 w-0"></div>
+                    </div>
+                    <div class="text-right">
+                        <button onclick="resetProgress()" class="text-[9px] text-red-500 hover:text-red-600 font-bold hover:underline">Reset History</button>
                     </div>
                 </div>
 
@@ -276,7 +305,8 @@
                 </div>
             </div>
 
-            <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+            <div class="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex flex-col gap-2">
+                <!-- Start Game Button -->
                 <button onclick="startGame()" class="w-full bg-medical-600 hover:bg-medical-700 text-white font-bold py-2 rounded-lg shadow-lg shadow-medical-500/30 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 text-xs">
                     <span id="start-btn-text">Start Game</span>
                     <i data-lucide="arrow-right" class="w-3 h-3"></i>
@@ -306,6 +336,10 @@
                     <span id="modal-title" class="text-[9px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Clinical Case</span>
                 </div>
                 <div class="flex items-center gap-2">
+                    <!-- Flag Button -->
+                    <button id="flag-btn" onclick="toggleFlagCurrentQuestion()" class="p-1.5 rounded-full text-slate-400 hover:text-medical-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title="Flag Question">
+                        <i data-lucide="bookmark" class="w-3 h-3"></i>
+                    </button>
                     <div id="q-player-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-200 text-slate-700">Player</div>
                     <button id="close-review-btn" onclick="closeReviewModal()" class="hidden p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         <i data-lucide="x" class="w-3 h-3"></i>
@@ -347,6 +381,45 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Review History Modal -->
+    <div id="review-modal" class="hidden fixed inset-0 z-[80] bg-slate-100 dark:bg-slate-950 flex flex-col animate-fade-in">
+        <!-- Header -->
+        <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-3 flex justify-between items-center shrink-0">
+            <h2 class="text-sm font-bold flex items-center gap-2 text-slate-800 dark:text-white">
+                <i data-lucide="history" class="w-4 h-4 text-medical-500"></i>
+                Review History
+            </h2>
+            <button onclick="closeReviewHistory()" class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-2 flex flex-col gap-2 shrink-0 shadow-sm z-10">
+            <!-- Tabs -->
+            <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <button onclick="switchReviewTab('mistakes')" class="review-tab flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all" id="tab-mistakes">Mistakes (Solo)</button>
+                <button onclick="switchReviewTab('flagged')" class="review-tab flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all" id="tab-flagged">Flagged Questions</button>
+            </div>
+            <!-- Filters -->
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button onclick="filterReview('all')" class="review-filter px-3 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap" data-filter="all">All Topics</button>
+                <button onclick="filterReview('derma')" class="review-filter px-3 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap" data-filter="derma">Dermatology</button>
+                <button onclick="filterReview('patho')" class="review-filter px-3 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap" data-filter="patho">Pathology</button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div id="review-content" class="flex-1 overflow-y-auto p-2 space-y-3">
+            <!-- Items injected here -->
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-2 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-center">
+             <button id="clear-history-btn" class="text-[10px] text-red-500 hover:text-red-600 font-bold hover:underline">Clear List</button>
         </div>
     </div>
 
