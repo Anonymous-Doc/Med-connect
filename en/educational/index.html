@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select School</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { medical: { 500: '#0ea5e9', 600: '#0284c7' } },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-900 text-white h-screen flex flex-col items-center justify-center p-4 font-sans">
+    
+    <div class="max-w-4xl w-full grid grid-cols-1 gap-6 animate-fade-in">
+        <a href="kasralainy/" class="group bg-gradient-to-br from-indigo-900 to-slate-900 border border-indigo-800 hover:border-indigo-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-indigo-500/20 flex flex-col items-center text-center gap-4">
+            <div class="p-4 bg-indigo-500 rounded-full shadow-lg shadow-indigo-500/40 group-hover:scale-110 transition-transform duration-300">
+                <i data-lucide="landmark" class="w-10 h-10 text-white"></i>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black mb-2">Kasr Al-Ainy</h2>
+                <p class="text-indigo-200/60 text-sm font-medium uppercase tracking-wider">School of Medicine</p>
+            </div>
+        </a>
+    </div>
+
+    <a href="../" class="mt-10 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>Back to Categories</span>
+    </a>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

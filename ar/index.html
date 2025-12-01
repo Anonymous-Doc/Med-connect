@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختر الفئة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { medical: { 500: '#0ea5e9', 600: '#0284c7' } },
+                    fontFamily: { sans: ['Tajawal', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-900 text-white h-screen flex flex-col items-center justify-center p-4 font-sans">
+    
+    <div class="max-w-4xl w-full grid md:grid-cols-2 gap-6 animate-fade-in">
+        <a href="educational/" class="group bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-800 hover:border-blue-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 flex flex-col items-center text-center gap-4">
+            <div class="p-4 bg-blue-500 rounded-full shadow-lg shadow-blue-500/40 group-hover:rotate-12 transition-transform duration-300">
+                <i data-lucide="graduation-cap" class="w-8 h-8 text-white"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black mb-2">تعليمي</h2>
+                <p class="text-blue-200/60 text-sm font-medium">علم الأمراض، الجلدية وحالات سريرية</p>
+            </div>
+        </a>
+
+        <a href="general/" class="group bg-gradient-to-br from-pink-900 to-slate-900 border border-pink-800 hover:border-pink-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/20 flex flex-col items-center text-center gap-4">
+            <div class="p-4 bg-pink-500 rounded-full shadow-lg shadow-pink-500/40 group-hover:-rotate-12 transition-transform duration-300">
+                <i data-lucide="lightbulb" class="w-8 h-8 text-white"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black mb-2">عام</h2>
+                <p class="text-pink-200/60 text-sm font-medium">ألغاز وتحديات ذكاء</p>
+            </div>
+        </a>
+    </div>
+
+    <a href="../" class="mt-10 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        <span>عودة للغة</span>
+    </a>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
