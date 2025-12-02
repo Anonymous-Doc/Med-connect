@@ -1,77 +1,44 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content:">
     <title>Select Category</title>
+    <link rel="stylesheet" href="../dist/output.css">
     <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1/dist/discord.min.js"></script>
-    <style>
-        body { background-color: #0f172a; color: white; font-family: ui-sans-serif, system-ui, sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-        a { text-decoration: none; color: inherit; }
-        .container { width: 100%; max-width: 56rem; padding: 1rem; display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-        @media (min-width: 768px) { .container { grid-template-columns: 1fr 1fr; } }
-        .card { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border: 1px solid #1e293b; border-radius: 1rem; padding: 2rem; text-align: center; transition: all 0.3s; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-        .card:hover { transform: scale(1.05); border-color: #3b82f6; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .icon-circle { padding: 1rem; border-radius: 9999px; margin-bottom: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .icon-blue { background-color: #3b82f6; }
-        .icon-pink { background-color: #ec4899; }
-        .card h2 { font-size: 1.5rem; font-weight: 900; margin: 0; }
-        .card p { color: #94a3b8; font-size: 0.875rem; font-weight: 500; margin: 0; }
-        .back-link { margin-top: 2.5rem; color: #94a3b8; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s; }
-        .back-link:hover { color: white; }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../discord_init.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { medical: { 500: '#0ea5e9', 600: '#0284c7' } },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-slate-900 text-white h-screen flex flex-col items-center justify-center p-4 font-sans">
     
-    <div class="container animate-fade-in">
-        <a href="educational/" class="card group bg-gradient-to-br from-blue-900 to-slate-900 border-blue-800 hover:border-blue-500">
-            <div class="icon-circle icon-blue group-hover:rotate-12 transition-transform duration-300">
+    <div class="max-w-4xl w-full grid md:grid-cols-2 gap-6 animate-fade-in">
+        <a href="educational/" class="group bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-800 hover:border-blue-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 flex flex-col items-center text-center gap-4">
+            <div class="p-4 bg-blue-500 rounded-full shadow-lg shadow-blue-500/40 group-hover:rotate-12 transition-transform duration-300">
                 <i data-lucide="graduation-cap" class="w-8 h-8 text-white"></i>
             </div>
             <div>
-                <h2 class="mb-2">Educational</h2>
-                <p class="text-blue-200/60">Pathology, Dermatology & Clinical Cases</p>
+                <h2 class="text-2xl font-black mb-2">Educational</h2>
+                <p class="text-blue-200/60 text-sm font-medium">Pathology, Dermatology & Clinical Cases</p>
             </div>
         </a>
 
-        <a href="general/" class="card group bg-gradient-to-br from-pink-900 to-slate-900 border-pink-800 hover:border-pink-500">
-            <div class="icon-circle icon-pink group-hover:-rotate-12 transition-transform duration-300">
+        <a href="general/" class="group bg-gradient-to-br from-pink-900 to-slate-900 border border-pink-800 hover:border-pink-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/20 flex flex-col items-center text-center gap-4">
+            <div class="p-4 bg-pink-500 rounded-full shadow-lg shadow-pink-500/40 group-hover:-rotate-12 transition-transform duration-300">
                 <i data-lucide="lightbulb" class="w-8 h-8 text-white"></i>
             </div>
             <div>
-                <h2 class="mb-2">General</h2>
-                <p class="text-pink-200/60">Riddles & Brain Teasers</p>
+                <h2 class="text-2xl font-black mb-2">General</h2>
+                <p class="text-pink-200/60 text-sm font-medium">Riddles & Brain Teasers</p>
             </div>
         </a>
     </div>
 
-    <a href="../" class="back-link text-slate-400 hover:text-white">
+    <a href="../" class="mt-10 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
         <i data-lucide="arrow-left" class="w-4 h-4"></i>
         <span>Back to Language</span>
     </a>
-
-    <!-- Import shared scripts for Discord handshake -->
-    <script src="../shared.js"></script>
-    <script src="../modes/connect4.js"></script>
-    <script src="../modes/solo.js"></script>
-    <script src="../modes/millionaire.js"></script>
-    <script src="../main.js"></script>
 
     <script>
         lucide.createIcons();

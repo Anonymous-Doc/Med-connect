@@ -1,5 +1,6 @@
 
-// main.js
+
+lucide.createIcons();
 
 const TOPIC_META = {
     'derma': { label: 'Dermatology', labelAr: 'الأمراض الجلدية', color: 'bg-blue-500', mode: 'mcq', prefix: 'dermatology' },
@@ -8,53 +9,6 @@ const TOPIC_META = {
     'geography': { label: 'Geography', labelAr: 'جغرافيا', color: 'bg-green-600', mode: 'mcq', prefix: 'geo' },
     'seerah': { label: 'Seerah', labelAr: 'السيرة النبوية', color: 'bg-emerald-600', mode: 'mcq', prefix: 'seerah' }
 };
-
-// --- Discord Activity Setup ---
-async function setupDiscordActivity() {
-    if (window.Discord) {
-        try {
-            const { DiscordSDK } = window.Discord;
-            const discordSdk = new DiscordSDK("1445380149330841621");
-            
-            await discordSdk.ready();
-            console.log("Discord SDK is ready");
-
-            // Try authorize, but don't block app if it fails (e.g. user cancels or dev mode issues)
-            try {
-                const { code } = await discordSdk.commands.authorize({
-                    client_id: "1445380149330841621",
-                    response_type: "code",
-                    state: "",
-                    prompt: "none",
-                    scope: ["identify", "guilds"]
-                });
-                console.log("Discord Authorized", code);
-            } catch (authErr) {
-                console.warn("Discord Authorization failed or cancelled:", authErr);
-            }
-            
-            if (discordSdk.platform === 'mobile') {
-                document.body.classList.add('discord-mobile');
-            }
-        } catch (e) {
-            console.error("Discord SDK Init Failed:", e);
-        }
-    }
-}
-
-// Wait for DOM to be ready before running scripts
-window.addEventListener('DOMContentLoaded', () => {
-    // Safe Icon Creation
-    if (window.lucide) {
-        lucide.createIcons();
-    }
-
-    setupDiscordActivity();
-
-    if (document.getElementById('setup-modal')) {
-        initGameSetup();
-    }
-});
 
 function resolveTopic(question) {
     if (!question || !question.id) return { label: 'General', labelAr: 'عام', color: 'bg-medical-500', mode: 'mcq' };
@@ -68,11 +22,13 @@ function resolveTopic(question) {
 }
 
 function localizeUI() {
+    // Localize elements with data-i18n attribute
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         el.innerText = getText(key);
     });
 
+    // Handle Input Placeholders
     const riddleInput = document.getElementById('riddle-input');
     if (riddleInput) riddleInput.placeholder = getText('typeAnswer');
 }
@@ -102,6 +58,7 @@ function selectGameMode(mode) {
     } else if (mode === 'solo') {
         strategyOpts.classList.add('hidden');
         limitOpts.classList.remove('hidden');
+        // Only show progress if category is educational (redundant check if button hidden, but safe)
         if (state.category !== 'general') {
             progressContainer.classList.remove('hidden');
         } else {
@@ -135,11 +92,10 @@ function selectSpecialty(type) {
 }
 
 async function updateBankStats() {
-    if (state.category === 'general') return;
+    if (state.category === 'general') return; // No stats for general decks
 
     const textEl = document.getElementById('bank-stats-text');
     const barEl = document.getElementById('bank-progress-bar');
-    if (!textEl || !barEl) return;
     
     const fullBank = await loadQuestionBank(state.selectedSpecialty);
     
@@ -307,13 +263,14 @@ function renderOptions(question) {
     question.options.forEach((opt, idx) => {
         const btn = document.createElement('button');
         btn.id = `opt-btn-${idx}`;
+        // RTL adjustment for text alignment
         const alignClass = state.lang === 'ar' ? 'text-right' : 'text-left';
         btn.className = `w-full ${alignClass} p-2 rounded-lg border-2 border-slate-100 dark:border-slate-800 hover:border-medical-500 hover:bg-medical-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2 group animate-fade-in`;
         btn.innerHTML = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold group-hover:bg-medical-500 group-hover:text-white transition-colors">${String.fromCharCode(65+idx)}</span><span class="text-xs font-medium text-slate-700 dark:text-slate-200 group-hover:text-medical-700 dark:group-hover:text-white">${opt}</span>`;
         btn.onclick = () => submitAnswer(idx, question);
         optsContainer.appendChild(btn);
     });
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
 }
 
 function renderQuestionModal(question) {
@@ -378,6 +335,7 @@ function renderQuestionModal(question) {
             const input = document.createElement('input');
             input.type = "text";
             input.placeholder = getText('typeAnswer');
+            // Right align input for Arabic
             input.className = `w-full p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-sm focus:border-medical-500 focus:ring-2 focus:ring-medical-200 dark:focus:ring-medical-900/30 outline-none transition-all ${state.lang === 'ar' ? 'text-right' : 'text-left'}`;
             input.id = "riddle-input";
             input.autocomplete = "off";
@@ -456,6 +414,7 @@ function renderQuestionModal(question) {
     document.getElementById('close-review-btn').classList.add('hidden');
     document.getElementById('question-text').innerText = question.q;
     
+    // Arabic text alignment for question
     if (state.lang === 'ar') document.getElementById('question-text').classList.add('text-right');
     else document.getElementById('question-text').classList.remove('text-right');
 
@@ -464,21 +423,28 @@ function renderQuestionModal(question) {
 
     modal.classList.remove('hidden');
     setTimeout(() => document.getElementById('question-card').classList.remove('scale-95'), 10);
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
 }
 
 function checkStringAnswer(user, correct) {
     if (!user || !correct) return false;
+    // Enhanced normalization for Arabic
     const normalize = s => {
         let str = s.toLowerCase().trim();
+        // Remove English articles
         str = str.replace(/^(a|an|the)\s+/i, '');
+        // Remove Arabic definite article "al" (ال) if present at start
         if (state.lang === 'ar') {
+            // Remove 'ال' from start
             if (str.startsWith("ال")) str = str.substring(2);
+            // Normalize Aleph
             str = str.replace(/[أإآ]/g, 'ا');
+            // Normalize Taa Marbuta
             str = str.replace(/ة/g, 'ه');
+            // Normalize Yaa
             str = str.replace(/ى/g, 'ي');
         }
-        return str.replace(/[^a-z0-9\u0600-\u06FF]/g, '');
+        return str.replace(/[^a-z0-9\u0600-\u06FF]/g, ''); // Keep numbers and Arabic/English chars
     };
     
     const u = normalize(user);
@@ -514,7 +480,7 @@ function updateFlagButtonState(id) {
         btn.classList.add('text-slate-400');
         btn.innerHTML = `<i data-lucide="bookmark" class="w-3 h-3"></i>`;
     }
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
 }
 
 function toggleFlagCurrentQuestion() {
@@ -635,7 +601,7 @@ function updateAnswerUI(submission, question, isCorrect) {
     }
     nextContainer.appendChild(nextBtn);
     nextContainer.classList.remove('hidden');
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
 }
 
 function submitAnswer(submission, questionObj) {
@@ -687,10 +653,8 @@ function submitAnswer(submission, questionObj) {
 
 function addToHistory(player, q, submission, correct) {
     state.history.push({ player, q, idx: submission, correct });
-    const list = document.getElementById('history-container');
-    if (!list) return;
-
     const currentIndex = state.history.length - 1; 
+    const list = document.getElementById('history-container');
     if(state.history.length === 1) list.innerHTML = ''; 
     const item = document.createElement('div');
     item.onclick = () => reviewMove(currentIndex); 
@@ -709,7 +673,7 @@ function addToHistory(player, q, submission, correct) {
 
     item.innerHTML = `<div class="flex justify-between mb-0.5"><span class="font-bold text-[9px] ${headerColor}">${headerText}</span><span class="text-[8px] text-slate-400">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div><p class="text-[10px] font-medium text-slate-700 dark:text-slate-200 line-clamp-2 mb-0.5">${q.q}</p><div class="flex items-center gap-1"><span class="px-1 py-0 rounded text-[8px] font-bold ${correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${correct ? getText('goodJob') : getText('wrong')}</span></div><div class="absolute top-1 right-1 rtl:right-auto rtl:left-1 opacity-0 group-hover:opacity-100 transition-opacity text-medical-500"><i data-lucide="eye" class="w-3 h-3"></i></div>`;
     list.prepend(item);
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
 }
 
 function reviewMove(idx) {
@@ -723,7 +687,7 @@ function reviewMove(idx) {
     document.getElementById('poll-chart').classList.add('hidden');
     document.getElementById('close-review-btn').classList.remove('hidden');
     document.getElementById('question-text').innerText = data.q.q;
-    
+    // Align review text
     if(state.lang === 'ar') document.getElementById('question-text').classList.add('text-right');
     else document.getElementById('question-text').classList.remove('text-right');
 
@@ -773,7 +737,7 @@ function reviewMove(idx) {
 
     modal.classList.remove('hidden');
     setTimeout(() => document.getElementById('question-card').classList.remove('scale-95'), 10);
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
 }
 
 function closeReviewModal() {
@@ -809,10 +773,13 @@ function toggleSidebar() {
     const sb = document.getElementById('sidebar');
     const main = document.getElementById('main-content');
     
+    // Check direction
     const isRTL = state.lang === 'ar';
     const activeClass = isRTL ? 'translate-x-full' : '-translate-x-full';
     
+    // Apply logic
     if(window.innerWidth >= 768) {
+        // Desktop: Push content
         if(state.isSidebarOpen) {
             sb.classList.add(activeClass);
             if(isRTL) {
@@ -829,6 +796,7 @@ function toggleSidebar() {
             }
         }
     } else {
+        // Mobile: Overlay
         sb.classList.toggle(activeClass);
     }
     state.isSidebarOpen = !state.isSidebarOpen;
@@ -837,6 +805,7 @@ function toggleSidebar() {
 function toggleTheme() { document.documentElement.classList.toggle('dark'); }
 
 async function initGameSetup() {
+    // 1. Check for configuration object from HTML or fall back to URL params
     if (window.gameConfig) {
         state.lang = window.gameConfig.lang;
         state.category = window.gameConfig.category;
@@ -849,44 +818,44 @@ async function initGameSetup() {
     localizeUI();
 
     document.getElementById('winner-modal').classList.add('hidden');
+    document.getElementById('setup-modal').classList.remove('hidden');
     
-    const setupModal = document.getElementById('setup-modal');
-    if (setupModal) {
-        setupModal.classList.remove('hidden');
-    } else {
-        return; 
-    }
-    
+    // Update Review History button text based on lang
     const reviewBtnText = state.lang === 'ar' ? 'سجل المراجعة' : 'Review History';
     const reviewBtnEl = document.querySelector('#sidebar-review-container button span');
     if(reviewBtnEl) reviewBtnEl.innerText = reviewBtnText;
 
     const reviewBtn = document.getElementById('sidebar-review-container');
     if(reviewBtn) {
-        reviewBtn.classList.remove('max-h-0', 'opacity-100');
+        reviewBtn.classList.remove('max-h-0', 'opacity-0');
         reviewBtn.classList.add('max-h-12', 'opacity-100');
     }
     
+    // Reset buttons visibility
     const buttons = {
         'mixed': document.getElementById('btn-topic-mixed'),
         'derma': document.getElementById('btn-topic-derma'),
         'patho': document.getElementById('btn-topic-patho'),
         'riddles': document.getElementById('btn-topic-riddles'),
-        'geography': document.getElementById('btn-topic-geography'), 
-        'seerah': document.getElementById('btn-topic-seerah')      
+        'geography': document.getElementById('btn-topic-geography'), // Placeholder if we add dynamic generation
+        'seerah': document.getElementById('btn-topic-seerah')      // Placeholder if we add dynamic generation
     };
 
-    const topicContainer = document.querySelector('#setup-modal .grid-cols-2'); 
+    // Need to dynamically create buttons for new topics if they don't exist in HTML but are in config
+    const topicContainer = document.querySelector('#setup-modal .grid-cols-2'); // The grid container for topics
     
     if (window.gameConfig && window.gameConfig.availableTopics) {
         const available = window.gameConfig.availableTopics;
         
+        // Hide existing specific ones first
         Object.values(buttons).forEach(b => b && b.classList.add('hidden'));
         
+        // Dynamically add or show buttons
         available.forEach(t => {
             if (buttons[t]) {
                 buttons[t].classList.remove('hidden');
             } else if (TOPIC_META[t]) {
+                // Create button if it doesn't exist in the HTML structure
                 const meta = TOPIC_META[t];
                 const label = state.lang === 'ar' ? meta.labelAr : meta.label;
                 const btn = document.createElement('button');
@@ -901,8 +870,8 @@ async function initGameSetup() {
                 
                 btn.innerHTML = `<i data-lucide="${iconName}" class="w-3 h-3 text-slate-400 icon-wrapper"></i><span class="text-[9px] font-bold">${label}</span>`;
                 topicContainer.appendChild(btn);
-                buttons[t] = btn; 
-                if(window.lucide) lucide.createIcons();
+                buttons[t] = btn; // Cache it
+                lucide.createIcons();
             }
         });
 
@@ -910,7 +879,10 @@ async function initGameSetup() {
             selectSpecialty(available[0]);
         }
     } else {
+        // Fallback legacy logic
         if (state.category === 'general') {
+             // General usually shows riddles, geography
+             // Hide others
              if(buttons['mixed']) buttons['mixed'].classList.add('hidden');
              if(buttons['derma']) buttons['derma'].classList.add('hidden');
              if(buttons['patho']) buttons['patho'].classList.add('hidden');
@@ -926,6 +898,7 @@ async function initGameSetup() {
         }
     }
 
+    // Handle "General" category specific UI changes (Hide Solo, Hide Bank Progress)
     const soloBtn = document.querySelector('button[data-mode="solo"]');
     const modeGrid = document.querySelector('#setup-modal .grid-cols-3');
     
@@ -937,6 +910,7 @@ async function initGameSetup() {
             modeGrid.classList.remove('grid-cols-3');
             modeGrid.classList.add('grid-cols-2');
         }
+        // Force default to millionaire
         selectGameMode('millionaire');
     } else {
         if(soloBtn) {
@@ -959,31 +933,32 @@ async function initGameSetup() {
     const isRTL = state.lang === 'ar';
     const activeClass = isRTL ? 'translate-x-full' : '-translate-x-full';
 
-    if (sb) {
-        if (isRTL) {
-            sb.classList.remove('left-0');
-            sb.classList.add('right-0');
-        } else {
-            sb.classList.remove('right-0');
-            sb.classList.add('left-0');
-        }
+    // Set Sidebar Position
+    if (isRTL) {
+        sb.classList.remove('left-0');
+        sb.classList.add('right-0');
+    } else {
+        sb.classList.remove('right-0');
+        sb.classList.add('left-0');
+    }
 
-        if(state.isSidebarOpen) {
-            sb.classList.remove(activeClass);
-            if(isRTL) {
-                main.classList.add('mr-56'); main.classList.remove('mr-0');
-            } else {
-                main.classList.add('ml-56'); main.classList.remove('ml-0');
-            }
+    if(state.isSidebarOpen) {
+        sb.classList.remove(activeClass);
+        if(isRTL) {
+            main.classList.add('mr-56'); main.classList.remove('mr-0');
         } else {
-            sb.classList.add(activeClass);
+            main.classList.add('ml-56'); main.classList.remove('ml-0');
         }
+    } else {
+        sb.classList.add(activeClass);
     }
     
     if(state.gameMode === 'solo' && state.category !== 'general') {
         await updateBankStats();
     }
 }
+
+// --- REVIEW PAGE LOGIC ---
 
 function openReviewHistory() {
     document.getElementById('setup-modal').classList.add('hidden');
@@ -1062,7 +1037,7 @@ function renderReviewContent() {
             <i data-lucide="inbox" class="w-10 h-10 opacity-20"></i>
             <p class="text-xs italic opacity-60">${getText('noItems')}</p>
         </div>`;
-        if(window.lucide) lucide.createIcons();
+        lucide.createIcons();
         return;
     }
 
@@ -1093,6 +1068,7 @@ function renderReviewContent() {
         let optionsHtml = '';
         
         if (item.q.options) {
+            // MCQ Display
             optionsHtml = '<div class="space-y-1.5">';
             item.q.options.forEach((opt, optIdx) => {
                 let style = "border-slate-100 dark:border-slate-800 opacity-60 bg-slate-50 dark:bg-slate-800/50";
@@ -1112,6 +1088,7 @@ function renderReviewContent() {
                     }
                 }
 
+                // RTL Alignment for options
                 const alignClass = state.lang === 'ar' ? 'flex-row-reverse text-right' : 'flex-row text-left';
 
                 optionsHtml += `
@@ -1161,7 +1138,7 @@ function renderReviewContent() {
         el.innerHTML = header + optionsHtml + footer;
         container.appendChild(el);
     });
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
 }
 
 function unflagFromReview(id) {
@@ -1189,5 +1166,7 @@ function revealFlaggedAnswer(idx, isInputMode) {
             }
         }
     }
-    if(window.lucide) lucide.createIcons();
+    lucide.createIcons();
 }
+
+initGameSetup();
