@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content:">
     <title>Kasr Al-Ainy - Select Year</title>
+    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1/dist/discord.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { medical: { 500: '#0ea5e9', 600: '#0284c7' } },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
+    <style>
+        /* Fallback CSS for Discord Activity */
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        a { text-decoration: none; color: inherit; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        .card-year { background-color: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; transition: all 0.2s; cursor: pointer; text-decoration: none; color: white; }
+        .card-year:hover { border-color: #0ea5e9; transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .year-circle { width: 3rem; height: 3rem; border-radius: 9999px; background-color: #0f172a; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; color: #64748b; transition: color 0.2s; }
+        .card-year:hover .year-circle { color: #0ea5e9; background-color: rgba(14, 165, 233, 0.1); }
+        .back-link { margin-top: 2.5rem; color: #94a3b8; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s; cursor: pointer; }
+        .back-link:hover { color: white; }
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; width: 100%; max-width: 64rem; }
+        @media (min-width: 768px) { .grid-container { grid-template-columns: repeat(5, 1fr); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4 font-sans">
     
@@ -25,45 +32,52 @@
         <p class="text-slate-400">Kasr Al-Ainy School of Medicine</p>
     </div>
 
-    <div class="max-w-5xl w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 animate-fade-in">
-        <!-- First Year -->
-        <a href="1st/" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-medical-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-medical-500 group-hover:bg-medical-500/10 transition-colors">1</div>
+    <div class="grid-container animate-fade-in">
+        <!-- 1st Year -->
+        <a href="1st/index.html" class="card-year group">
+            <div class="year-circle group-hover:text-medical-500 group-hover:bg-medical-500/10">1</div>
             <h3 class="font-bold text-lg group-hover:text-medical-400 transition-colors">First Year</h3>
         </a>
 
-        <!-- Second Year -->
-        <a href="2nd/" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-purple-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-purple-500 group-hover:bg-purple-500/10 transition-colors">2</div>
+        <!-- 2nd Year -->
+        <a href="2nd/index.html" class="card-year group">
+            <div class="year-circle group-hover:text-purple-500 group-hover:bg-purple-500/10">2</div>
             <h3 class="font-bold text-lg group-hover:text-purple-400 transition-colors">Second Year</h3>
         </a>
 
-        <!-- Third Year -->
-        <a href="3rd/" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-green-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-green-500 group-hover:bg-green-500/10 transition-colors">3</div>
+        <!-- 3rd Year -->
+        <a href="3rd/index.html" class="card-year group">
+            <div class="year-circle group-hover:text-green-500 group-hover:bg-green-500/10">3</div>
             <h3 class="font-bold text-lg group-hover:text-green-400 transition-colors">Third Year</h3>
         </a>
 
-        <!-- Fourth Year -->
-        <a href="4th/" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-orange-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-orange-500 group-hover:bg-orange-500/10 transition-colors">4</div>
+        <!-- 4th Year -->
+        <a href="4th/index.html" class="card-year group">
+            <div class="year-circle group-hover:text-orange-500 group-hover:bg-orange-500/10">4</div>
             <h3 class="font-bold text-lg group-hover:text-orange-400 transition-colors">Fourth Year</h3>
         </a>
 
-        <!-- Fifth Year -->
-        <a href="5th/" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-red-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors">5</div>
+        <!-- 5th Year -->
+        <a href="5th/index.html" class="card-year group">
+            <div class="year-circle group-hover:text-red-500 group-hover:bg-red-500/10">5</div>
             <h3 class="font-bold text-lg group-hover:text-red-400 transition-colors">Fifth Year</h3>
         </a>
     </div>
 
-    <a href="../" class="mt-12 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
+    <a href="../../index.html" class="back-link">
         <i data-lucide="arrow-left" class="w-4 h-4"></i>
         <span>Back to Schools</span>
     </a>
 
+    <!-- Import shared scripts with depth ../../../ -->
+    <script src="../../../shared.js"></script>
+    <script src="../../../modes/connect4.js"></script>
+    <script src="../../../modes/solo.js"></script>
+    <script src="../../../modes/millionaire.js"></script>
+    <script src="../../../main.js"></script>
+
     <script>
-        lucide.createIcons();
+        if(window.lucide) lucide.createIcons();
     </script>
 </body>
 </html>
