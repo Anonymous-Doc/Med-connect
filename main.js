@@ -1,5 +1,4 @@
 
-
 lucide.createIcons();
 
 const TOPIC_META = {
@@ -9,6 +8,39 @@ const TOPIC_META = {
     'geography': { label: 'Geography', labelAr: 'جغرافيا', color: 'bg-green-600', mode: 'mcq', prefix: 'geo' },
     'seerah': { label: 'Seerah', labelAr: 'السيرة النبوية', color: 'bg-emerald-600', mode: 'mcq', prefix: 'seerah' }
 };
+
+// --- Discord Activity Setup ---
+async function setupDiscordActivity() {
+    if (window.Discord) {
+        try {
+            const { DiscordSDK } = window.Discord;
+            const discordSdk = new DiscordSDK("1445380149330841621");
+            
+            // Wait for Discord to be ready
+            await discordSdk.ready();
+            console.log("Discord SDK is ready");
+
+            // Authorize (Handshake)
+            const { code } = await discordSdk.commands.authorize({
+                client_id: "1445380149330841621",
+                response_type: "code",
+                state: "",
+                prompt: "none",
+                scope: ["identify", "guilds"]
+            });
+            
+            // Determine if we need to adjust UI for Discord (e.g., padding for mobile overlay)
+            if (discordSdk.platform === 'mobile') {
+                document.body.classList.add('discord-mobile');
+            }
+        } catch (e) {
+            console.error("Discord SDK Init Failed:", e);
+        }
+    }
+}
+// Initialize Discord SDK
+setupDiscordActivity();
+// -----------------------------
 
 function resolveTopic(question) {
     if (!question || !question.id) return { label: 'General', labelAr: 'عام', color: 'bg-medical-500', mode: 'mcq' };
@@ -827,7 +859,7 @@ async function initGameSetup() {
 
     const reviewBtn = document.getElementById('sidebar-review-container');
     if(reviewBtn) {
-        reviewBtn.classList.remove('max-h-0', 'opacity-0');
+        reviewBtn.classList.remove('max-h-0', 'opacity-100');
         reviewBtn.classList.add('max-h-12', 'opacity-100');
     }
     
