@@ -20,7 +20,7 @@ async function setupDiscordActivity() {
             await discordSdk.ready();
             console.log("Discord SDK is ready");
 
-            // Authorize (Handshake)
+            // Authorize (Handshake) - Keeps the activity alive
             const { code } = await discordSdk.commands.authorize({
                 client_id: "1445380149330841621",
                 response_type: "code",
@@ -29,7 +29,7 @@ async function setupDiscordActivity() {
                 scope: ["identify", "guilds"]
             });
             
-            // Determine if we need to adjust UI for Discord (e.g., padding for mobile overlay)
+            // Adjust UI for mobile if needed
             if (discordSdk.platform === 'mobile') {
                 document.body.classList.add('discord-mobile');
             }
@@ -38,7 +38,7 @@ async function setupDiscordActivity() {
         }
     }
 }
-// Initialize Discord SDK
+// Initialize Discord SDK immediately on all pages
 setupDiscordActivity();
 // -----------------------------
 
@@ -128,6 +128,7 @@ async function updateBankStats() {
 
     const textEl = document.getElementById('bank-stats-text');
     const barEl = document.getElementById('bank-progress-bar');
+    if (!textEl || !barEl) return;
     
     const fullBank = await loadQuestionBank(state.selectedSpecialty);
     
@@ -850,7 +851,14 @@ async function initGameSetup() {
     localizeUI();
 
     document.getElementById('winner-modal').classList.add('hidden');
-    document.getElementById('setup-modal').classList.remove('hidden');
+    
+    // Check if the modal exists (it might not on menu pages)
+    const setupModal = document.getElementById('setup-modal');
+    if (setupModal) {
+        setupModal.classList.remove('hidden');
+    } else {
+        return; // Exit if on a page without game UI
+    }
     
     // Update Review History button text based on lang
     const reviewBtnText = state.lang === 'ar' ? 'سجل المراجعة' : 'Review History';
@@ -966,23 +974,25 @@ async function initGameSetup() {
     const activeClass = isRTL ? 'translate-x-full' : '-translate-x-full';
 
     // Set Sidebar Position
-    if (isRTL) {
-        sb.classList.remove('left-0');
-        sb.classList.add('right-0');
-    } else {
-        sb.classList.remove('right-0');
-        sb.classList.add('left-0');
-    }
-
-    if(state.isSidebarOpen) {
-        sb.classList.remove(activeClass);
-        if(isRTL) {
-            main.classList.add('mr-56'); main.classList.remove('mr-0');
+    if (sb) {
+        if (isRTL) {
+            sb.classList.remove('left-0');
+            sb.classList.add('right-0');
         } else {
-            main.classList.add('ml-56'); main.classList.remove('ml-0');
+            sb.classList.remove('right-0');
+            sb.classList.add('left-0');
         }
-    } else {
-        sb.classList.add(activeClass);
+
+        if(state.isSidebarOpen) {
+            sb.classList.remove(activeClass);
+            if(isRTL) {
+                main.classList.add('mr-56'); main.classList.remove('mr-0');
+            } else {
+                main.classList.add('ml-56'); main.classList.remove('ml-0');
+            }
+        } else {
+            sb.classList.add(activeClass);
+        }
     }
     
     if(state.gameMode === 'solo' && state.category !== 'general') {
@@ -1201,4 +1211,6 @@ function revealFlaggedAnswer(idx, isInputMode) {
     lucide.createIcons();
 }
 
-initGameSetup();
+if (document.getElementById('setup-modal')) {
+    initGameSetup();
+}

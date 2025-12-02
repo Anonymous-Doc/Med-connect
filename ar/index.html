@@ -1,10 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content:">
     <title>اختر الفئة</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1/dist/discord.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <script>
@@ -46,6 +49,13 @@
         <i data-lucide="arrow-right" class="w-4 h-4"></i>
         <span>عودة للغة</span>
     </a>
+
+    <!-- Import shared scripts for Discord handshake -->
+    <script src="../shared.js"></script>
+    <script src="../modes/connect4.js"></script>
+    <script src="../modes/solo.js"></script>
+    <script src="../modes/millionaire.js"></script>
+    <script src="../main.js"></script>
 
     <script>
         lucide.createIcons();
