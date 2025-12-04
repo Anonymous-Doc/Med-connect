@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,10 +19,16 @@
         }
     </script>
 </head>
-<body class="bg-slate-900 text-white h-screen flex flex-col items-center justify-center p-4 font-sans">
+<body class="bg-slate-900 text-white h-screen flex flex-col items-center justify-center p-4 font-sans relative">
     
+    <!-- Games Button -->
+    <a href="games/index.html" class="absolute top-6 right-6 w-24 h-24 bg-slate-800 border border-purple-500/50 hover:border-purple-500 rounded-xl flex flex-col items-center justify-center hover:bg-purple-500/10 transition-all shadow-lg group z-50 hover:-translate-y-1">
+        <i data-lucide="gamepad-2" class="w-8 h-8 text-purple-400 group-hover:scale-110 transition-transform mb-2"></i>
+        <span class="text-xs font-bold text-slate-400 group-hover:text-white uppercase tracking-wider">Games</span>
+    </a>
+
     <div class="max-w-4xl w-full grid md:grid-cols-2 gap-6 animate-fade-in">
-        <a href="educational/" class="group bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-800 hover:border-blue-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 flex flex-col items-center text-center gap-4">
+        <a href="educational/index.html" class="group bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-800 hover:border-blue-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 flex flex-col items-center text-center gap-4">
             <div class="p-4 bg-blue-500 rounded-full shadow-lg shadow-blue-500/40 group-hover:rotate-12 transition-transform duration-300">
                 <i data-lucide="graduation-cap" class="w-8 h-8 text-white"></i>
             </div>
@@ -31,7 +38,7 @@
             </div>
         </a>
 
-        <a href="general/" class="group bg-gradient-to-br from-pink-900 to-slate-900 border border-pink-800 hover:border-pink-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/20 flex flex-col items-center text-center gap-4">
+        <a href="general/index.html" class="group bg-gradient-to-br from-pink-900 to-slate-900 border border-pink-800 hover:border-pink-500 rounded-2xl p-8 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/20 flex flex-col items-center text-center gap-4">
             <div class="p-4 bg-pink-500 rounded-full shadow-lg shadow-pink-500/40 group-hover:-rotate-12 transition-transform duration-300">
                 <i data-lucide="lightbulb" class="w-8 h-8 text-white"></i>
             </div>
@@ -42,7 +49,7 @@
         </a>
     </div>
 
-    <a href="../" class="mt-10 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
+    <a href="../index.html" class="mt-10 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
         <i data-lucide="arrow-left" class="w-4 h-4"></i>
         <span>Back to Language</span>
     </a>

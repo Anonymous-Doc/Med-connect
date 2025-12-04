@@ -148,7 +148,6 @@
 {"id": "dermatology_00147", "q": "Laser may be used in the treatment of", "options": ["Warts.", "Molluscum contagiosum.", "Acne scars.", "All of the above.", "None of the above."], "correct": 3, "difficulty": 2},
 {"id": "dermatology_00148", "q": "Post herpetic neuralgia occurs more common in", "options": ["Children.", "Elderly patients.", "Diabetic patients.", "Motor nerve affection.", "Sensory nerve affection."], "correct": 1, "difficulty": 2},
 {"id": "dermatology_00149", "q": "Mucous membranes may be affected in", "options": ["Papular urticaria.", "Actinic lichen planus.", "Scabies.", "Chickenpox.", "None of the above."], "correct": 3, "difficulty": 2},
-{"id": "dermatology_00149", "q": "Mucous membranes may be affected in", "options": ["Papular urticaria", "Actinic lichen planus", "Scabies", "Chickenpox", "None of the above"], "correct": 3, "difficulty": 2},
 {"id": "dermatology_00150", "q": "Primary varicella zoster virus infection leads to:", "options": ["Facial palsy", "Genital herpes", "Chickenpox", "Herpes zoster", "Oral herpes"], "correct": 2, "difficulty": 2},
 {"id": "dermatology_00151", "q": "In herpetic whitlow the site of infection is:", "options": ["Face", "Mucous membrane", "Genitals", "Fingers", "None of the above"], "correct": 3, "difficulty": 2},
 {"id": "dermatology_00152", "q": "An adult patient with unilateral grouped vesicles along distribution of a sensory nerves is suffering from:", "options": ["Herpes simplex", "Herpes zoster", "Chickenpox", "Warts", "None of the above"], "correct": 1, "difficulty": 2},

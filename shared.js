@@ -23,11 +23,15 @@ const TRANSLATIONS = {
         mStrategy: "Strategy",
         mResidency: "Residency",
         mHighStakes: "High Stakes",
+        mPoints: "Points Battle",
+        mCompetitive: "Competitive",
         topic: "Topic",
         tMixed: "All Topics",
         tDerma: "Derma",
         tPatho: "Patho",
         tRiddles: "Riddles",
+        seerah: "Seerah",
+        aqidah: "Aqidah",
         progress: "Bank Progress",
         resetHist: "Reset History",
         questions: "Questions",
@@ -36,6 +40,7 @@ const TRANSLATIONS = {
         startGame: "Start Game",
         startQuiz: "Start Quiz",
         beginRes: "Begin Residency",
+        beginBattle: "Begin Battle",
         loading: "Loading...",
         lVitals: "Vitals",
         lConsult: "Consult",
@@ -56,6 +61,14 @@ const TRANSLATIONS = {
         seeResults: "See Results",
         dropPiece: "Drop Piece",
         endTurn: "End Turn",
+        stealChance: "Steal Chance!",
+        attemptSteal: "Attempt Steal",
+        passTurn: "Pass Turn",
+        points: "Points",
+        diffEasy: "Easy (100)",
+        diffMed: "Medium (150)",
+        diffHard: "Hard (200)",
+        remainingQ: "Remaining:",
         giveUp: "I give up, show me the answer",
         submit: "Submit Answer",
         typeAnswer: "Type your answer here...",
@@ -64,7 +77,13 @@ const TRANSLATIONS = {
         eliminated: "ELIMINATED!",
         youWin: "Wins!",
         score: "Score",
-        noItems: "No items found."
+        noItems: "No items found.",
+        sessionFinished: "Session finished.",
+        topRank: "You reached the top rank!",
+        walkAway: "You walk away with...",
+        pickTopic: "Select a Topic",
+        reportQ: "Report Question",
+        reported: "Reported"
     },
     ar: {
         reviewHistory: "سجل المراجعة",
@@ -87,11 +106,15 @@ const TRANSLATIONS = {
         mStrategy: "استراتيجية",
         mResidency: "الإقامة",
         mHighStakes: "تحدي عالي",
+        mPoints: "معركة النقاط",
+        mCompetitive: "تنافسي",
         topic: "الموضوع",
         tMixed: "كل المواضيع",
         tDerma: "جلدية",
         tPatho: "باثولوجي",
         tRiddles: "أحجيات",
+        seerah: "السيرة",
+        aqidah: "العقيدة",
         progress: "تقدم البنك",
         resetHist: "إعادة تعيين",
         questions: "الأسئلة",
@@ -100,6 +123,7 @@ const TRANSLATIONS = {
         startGame: "ابدأ اللعبة",
         startQuiz: "ابدأ الاختبار",
         beginRes: "ابدأ الإقامة",
+        beginBattle: "ابدأ المعركة",
         loading: "جار التحميل...",
         lVitals: "العلامات الحيوية",
         lConsult: "استشارة",
@@ -120,6 +144,14 @@ const TRANSLATIONS = {
         seeResults: "النتائج",
         dropPiece: "إسقاط القطعة",
         endTurn: "إنهاء الدور",
+        stealChance: "فرصة للسرقة!",
+        attemptSteal: "حاول السرقة",
+        passTurn: "تخطى الدور",
+        points: "النقاط",
+        diffEasy: "سهل (100)",
+        diffMed: "متوسط (150)",
+        diffHard: "صعب (200)",
+        remainingQ: "المتبقي:",
         giveUp: "استسلم، أرني الإجابة",
         submit: "إرسال الإجابة",
         typeAnswer: "اكتب إجابتك هنا...",
@@ -128,7 +160,13 @@ const TRANSLATIONS = {
         eliminated: "تم الإقصاء!",
         youWin: "فاز!",
         score: "النتيجة",
-        noItems: "لا توجد عناصر."
+        noItems: "لا توجد عناصر.",
+        sessionFinished: "انتهت الجلسة.",
+        topRank: "لقد وصلت إلى أعلى رتبة!",
+        walkAway: "لقد ربحت...",
+        pickTopic: "يرجى اختيار موضوع",
+        reportQ: "إبلاغ عن السؤال",
+        reported: "تم الإبلاغ"
     }
 };
 
@@ -151,11 +189,47 @@ const LADDER = [
     { val: 250000, safe: false }, { val: 500000, safe: false }, { val: 1000000, safe: true }
 ];
 
-let loadedDerma = null;
-let loadedPatho = null;
-let loadedRiddles = null;
-let loadedGeography = null;
-let loadedSeerah = null;
+const ROWS = 10;
+
+// SHARED STATE
+let state = {
+    lang: 'en',
+    category: 'all', // 'general' or 'educational' or 'all'
+    gameMode: null, // Initialize as null to detect first load vs replay
+    activePlayersCount: null,
+    activeColCount: null,
+    selectedTopics: [], // Start empty, user must select
+    questionLimit: null,
+    currentPlayerIndex: 0,
+    board: [],
+    playerScores: {},
+    soloScore: 0,
+    soloTotal: 0,
+    gameActive: false,
+    questionQueue: [],
+    pendingColumn: null,
+    isSidebarOpen: true,
+    history: [],
+    currentQuestion: null,
+    currentResult: null,
+    currentSelection: null,
+    ladderIndex: 0,
+    lifelines: { '5050': true, 'poll': true, 'consult': true },
+    safeAmount: 0,
+    reviewTab: 'mistakes',
+    reviewFilter: 'all',
+    
+    // Points Battle Specific
+    pointsBattleTotalQ: 30,
+    pointsBattleRemaining: 30,
+    currentDifficultyValue: 0,
+    isStealMode: false,
+    stealingPlayerIndex: -1
+};
+
+function getText(key) {
+    return TRANSLATIONS[state.lang][key] || TRANSLATIONS['en'][key] || key;
+}
 
 // --- PERSISTENCE LOGIC ---
 const STORAGE_KEY_SOLVED = 'medconnect_solved_ids';
@@ -227,6 +301,8 @@ function clearMistakes(filter = 'all') {
                     else if (m.q.id.startsWith('riddles')) t = 'riddles';
                     else if (m.q.id.startsWith('geo')) t = 'geography';
                     else if (m.q.id.startsWith('seerah')) t = 'seerah';
+                    else if (m.q.id.startsWith('aqidah')) t = 'aqidah';
+                    else if (m.q.id.startsWith('surgery')) t = 'surgery';
                 }
                 return t !== filter;
             });
@@ -283,6 +359,8 @@ function clearFlagged(filter = 'all') {
                     else if (f.q.id.startsWith('riddles')) t = 'riddles';
                     else if (f.q.id.startsWith('geo')) t = 'geography';
                     else if (f.q.id.startsWith('seerah')) t = 'seerah';
+                    else if (f.q.id.startsWith('aqidah')) t = 'aqidah';
+                    else if (f.q.id.startsWith('surgery')) t = 'surgery';
                 }
                 return t !== filter;
             });
@@ -291,152 +369,4 @@ function clearFlagged(filter = 'all') {
         return true;
     }
     return false;
-}
-// -------------------------
-
-async function loadQuestionBank(type) {
-    const startBtn = document.querySelector('#setup-modal button[onclick="startGame()"]');
-    
-    // Determine language and base path from config or defaults
-    const lang = state.lang || 'en';
-    const config = window.gameConfig || {};
-    const basePath = config.basePath || '';
-    
-    // Construct default global path
-    const globalPrefix = `${basePath}qbank/${lang}/`;
-    
-    // Helper to get URL: prefers specific topic config, falls back to global path
-    const getUrl = (topicKey, defaultFile) => {
-        if (config.topics && config.topics[topicKey]) {
-            return config.topics[topicKey];
-        }
-        return globalPrefix + defaultFile;
-    };
-    
-    const needsDerma = !loadedDerma && (type === 'derma' || type === 'mixed');
-    const needsPatho = !loadedPatho && (type === 'patho' || type === 'mixed');
-    const needsRiddles = !loadedRiddles && (type === 'riddles' || type === 'mixed');
-    const needsGeography = !loadedGeography && (type === 'geography' || type === 'mixed');
-    const needsSeerah = !loadedSeerah && (type === 'seerah' || type === 'mixed');
-    
-    const needsFetch = needsDerma || needsPatho || needsRiddles || needsGeography || needsSeerah;
-    
-    if (needsFetch && startBtn) {
-        startBtn.disabled = true;
-        startBtn.classList.add('opacity-75', 'cursor-wait');
-        const textEl = document.getElementById('start-btn-text');
-        if(textEl) textEl.innerText = getText('loading');
-    }
-
-    let questions = [];
-
-    try {
-        const promises = [];
-        
-        if (needsDerma) {
-            promises.push(
-                fetch(getUrl('derma', 'dermatology.json'))
-                .then(r => r.json())
-                .then(d => loadedDerma = d)
-                .catch(e => { console.warn("Failed to load derma:", e); loadedDerma = []; })
-            );
-        }
-        if (needsPatho) {
-            promises.push(
-                fetch(getUrl('patho', 'clinical_pathology.json'))
-                .then(r => r.json())
-                .then(d => loadedPatho = d)
-                .catch(e => { console.warn("Failed to load patho:", e); loadedPatho = []; })
-            );
-        }
-        if (needsRiddles) {
-            promises.push(
-                fetch(getUrl('riddles', 'riddles.json'))
-                .then(r => r.json())
-                .then(d => loadedRiddles = d)
-                .catch(e => { console.warn("Failed to load riddles:", e); loadedRiddles = []; })
-            );
-        }
-        if (needsGeography) {
-            promises.push(
-                fetch(getUrl('geography', 'geography.json'))
-                .then(r => r.json())
-                .then(d => loadedGeography = d)
-                .catch(e => { console.warn("Failed to load geography:", e); loadedGeography = []; })
-            );
-        }
-        if (needsSeerah) {
-            promises.push(
-                fetch(getUrl('seerah', 'seerah.json'))
-                .then(r => r.json())
-                .then(d => loadedSeerah = d)
-                .catch(e => { console.warn("Failed to load seerah:", e); loadedSeerah = []; })
-            );
-        }
-        
-        await Promise.all(promises);
-
-        if (type === 'derma') questions = [...(loadedDerma || [])];
-        else if (type === 'patho') questions = [...(loadedPatho || [])];
-        else if (type === 'riddles') questions = [...(loadedRiddles || [])];
-        else if (type === 'geography') questions = [...(loadedGeography || [])];
-        else if (type === 'seerah') questions = [...(loadedSeerah || [])];
-        else if (type === 'mixed') {
-            if(loadedDerma) questions.push(...loadedDerma);
-            if(loadedPatho) questions.push(...loadedPatho);
-            if(loadedRiddles) questions.push(...loadedRiddles);
-            if(loadedGeography) questions.push(...loadedGeography);
-            if(loadedSeerah) questions.push(...loadedSeerah);
-        }
-        
-    } catch (error) {
-        console.error("Critical error loading question bank", error);
-    } finally {
-        if (startBtn) {
-            startBtn.disabled = false;
-            startBtn.classList.remove('opacity-75', 'cursor-wait');
-            const textEl = document.getElementById('start-btn-text');
-            if(textEl) {
-                if (state.gameMode === 'strategy') textEl.innerText = getText('startGame');
-                else if (state.gameMode === 'millionaire') textEl.innerText = getText('beginRes');
-                else textEl.innerText = getText('startQuiz');
-            }
-        }
-        return questions;
-    }
-}
-
-// SHARED STATE
-let state = {
-    lang: 'en',
-    category: 'all', // 'general' or 'educational' or 'all'
-    gameMode: 'solo',
-    activePlayersCount: 2,
-    activeColCount: 10,
-    selectedSpecialty: 'mixed',
-    questionLimit: 10,
-    currentPlayerIndex: 0,
-    board: [],
-    playerScores: {},
-    soloScore: 0,
-    soloTotal: 0,
-    gameActive: false,
-    questionQueue: [],
-    pendingColumn: null,
-    isSidebarOpen: true,
-    history: [],
-    currentQuestion: null,
-    currentResult: null,
-    currentSelection: null,
-    ladderIndex: 0,
-    lifelines: { '5050': true, 'poll': true, 'consult': true },
-    safeAmount: 0,
-    reviewTab: 'mistakes',
-    reviewFilter: 'all'
-};
-
-const ROWS = 10;
-
-function getText(key) {
-    return TRANSLATIONS[state.lang][key] || TRANSLATIONS['en'][key] || key;
 }

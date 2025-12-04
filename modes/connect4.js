@@ -1,3 +1,5 @@
+
+
 function handleColumnClick(c) {
     // 1. Check if game is active and in correct mode
     if(!state.gameActive || (state.gameMode !== 'strategy')) return;
@@ -8,9 +10,29 @@ function handleColumnClick(c) {
         return;
     }
 
-    // 3. Proceed to question
+    // 3. Calculate target row and difficulty
+    let r = ROWS - 1;
+    let targetRow = -1;
+    while(r >= 0) {
+        if(state.board[r][c] === 0) {
+            targetRow = r;
+            break;
+        }
+        r--;
+    }
+
+    // Difficulty Logic:
+    // Bottom 3 rows (Indices 7, 8, 9) -> Easy (1)
+    // Middle 3 rows (Indices 4, 5, 6) -> Medium (2)
+    // Top 4 rows (Indices 0, 1, 2, 3) -> Hard (3)
+    let diff = 1;
+    if (targetRow <= 3) diff = 3;
+    else if (targetRow <= 6) diff = 2;
+    else diff = 1;
+
+    state.targetDifficulty = diff;
     state.pendingColumn = c;
-    console.log(`Column ${c} selected. showing question.`);
+    console.log(`Column ${c} selected. Target Row ${targetRow}. Difficulty ${diff}`);
     showQuestion();
 }
 
@@ -46,6 +68,14 @@ function dropPiece(col) {
 
 function switchTurn() {
     state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.activePlayersCount;
+    
+    // Reset turn state to prevent review modal from re-opening old questions
+    state.currentQuestion = null;
+    state.currentResult = null;
+    state.currentSelection = null;
+    state.pendingColumn = null;
+    state.targetDifficulty = null;
+
     renderScoreboard();
 }
 
@@ -78,8 +108,8 @@ function handleWin() {
     const player = PLAYERS_CONFIG[state.currentPlayerIndex];
     
     // Update Winner Modal Text
-    document.getElementById('winner-title').innerText = "VICTORY!";
-    document.getElementById('winner-text').innerText = `${player.name} Wins!`;
+    document.getElementById('winner-title').innerText = getText('victory');
+    document.getElementById('winner-text').innerText = `${player.name} ${getText('wins')}`;
     
     // Hide stats used in solo mode
     document.getElementById('winner-stats').classList.add('hidden');

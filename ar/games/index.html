@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لطفيات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Tajawal', 'sans-serif'] },
+                    animation: { 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col font-sans">
+    
+    <!-- Header -->
+    <header class="p-4 flex items-center border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-20">
+        <a href="../index.html" class="p-2 rounded-lg hover:bg-slate-800 transition-colors">
+            <i data-lucide="arrow-right" class="w-5 h-5 text-slate-400"></i>
+        </a>
+        <h1 class="mr-4 text-lg font-bold flex items-center gap-2">
+            <i data-lucide="coffee" class="w-5 h-5 text-purple-500"></i>
+            <span>لطفيات يومية</span>
+        </h1>
+    </header>
+
+    <!-- Menu -->
+    <div id="games-menu" class="flex-1 p-6 max-w-4xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6 content-center">
+        
+        <!-- Reaction Time -->
+        <a href="reaction/index.html" class="group bg-slate-800 border border-slate-700 hover:border-red-500 rounded-2xl p-8 flex flex-col items-center gap-4 transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-red-500/10">
+            <div class="w-20 h-20 rounded-2xl bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
+                <i data-lucide="zap" class="w-10 h-10 text-red-500"></i>
+            </div>
+            <div class="text-center">
+                <h3 class="font-bold text-xl mb-1">سرعة رد الفعل</h3>
+                <p class="text-sm text-slate-400">اختبر سرعة استجابتك للضوء الأخضر.</p>
+            </div>
+        </a>
+
+        <!-- CPS Test -->
+        <button onclick="location.href='cps/index.html'" class="group bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-2xl p-8 flex flex-col items-center gap-4 transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10">
+            <div class="w-20 h-20 rounded-2xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                <i data-lucide="mouse-pointer-2" class="w-10 h-10 text-blue-500"></i>
+            </div>
+            <div class="text-center">
+                <h3 class="font-bold text-xl mb-1">سرعة النقر</h3>
+                <p class="text-sm text-slate-400">كم نقرة يمكنك القيام بها في 5 ثوانٍ؟</p>
+            </div>
+        </button>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

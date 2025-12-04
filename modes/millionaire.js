@@ -1,3 +1,5 @@
+
+
 function renderLadder() {
     const ladderEl = document.getElementById('money-ladder');
     ladderEl.innerHTML = '';
@@ -34,6 +36,11 @@ function updateMillionaireDisplay() {
 }
 
 function handleMillionaireProgress(won) {
+    // Reset question state to prevent re-opening via review
+    state.currentQuestion = null;
+    state.currentResult = null;
+    state.currentSelection = null;
+
     if (won) {
         if (LADDER[state.ladderIndex].safe) {
             state.safeAmount = LADDER[state.ladderIndex].val;
@@ -51,10 +58,10 @@ function handleMillionaireProgress(won) {
 }
 
 function showMillionaireEnd(victory, amount) {
-    document.getElementById('winner-title').innerText = victory ? "COMPLETED!" : "ELIMINATED";
+    document.getElementById('winner-title').innerText = victory ? getText('completed') : getText('eliminated');
     document.getElementById('winner-text').innerText = victory 
-        ? `You reached the top rank!` 
-        : `You walk away with...`;
+        ? getText('topRank') 
+        : getText('walkAway');
     const stats = document.getElementById('winner-stats');
     stats.innerText = `$${amount.toLocaleString()}`;
     stats.classList.remove('hidden');
