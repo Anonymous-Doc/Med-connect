@@ -138,7 +138,7 @@ window.initGameSetup = async function() {
 
     if (!state.activePlayersCount) state.activePlayersCount = 2;
     if (!state.activeColCount) state.activeColCount = 10;
-    if (!state.questionLimit) state.questionLimit = 10;
+    if (!state.questionLimit) state.questionLimit = 9999;
 
     // Apply visual selections based on state
     selectGameMode(state.gameMode);
@@ -223,6 +223,7 @@ window.selectGameMode = function(mode) {
             btn.classList.add('border-slate-200', 'dark:border-slate-700');
         }
     });
+    
     const strategyOpts = document.getElementById('strategy-options');
     const limitOpts = document.getElementById('question-limit-options');
     const startBtnText = document.getElementById('start-btn-text');
@@ -234,63 +235,89 @@ window.selectGameMode = function(mode) {
     // Helper to manage children visibility safely
     const updateStrategyChildren = (showTeams, showGrid) => {
         if (strategyOpts && strategyOpts.children.length >= 2) {
-            // Child 0 is Teams, Child 1 is Grid Width
-            if(showTeams) strategyOpts.children[0].classList.remove('hidden');
-            else strategyOpts.children[0].classList.add('hidden');
-
-            if(showGrid) strategyOpts.children[1].classList.remove('hidden');
-            else strategyOpts.children[1].classList.add('hidden');
+            strategyOpts.children[0].classList.toggle('hidden', !showTeams);
+            strategyOpts.children[1].classList.toggle('hidden', !showGrid);
         }
     };
 
     if(mode === 'strategy') {
         toggle(strategyOpts, true);
-        updateStrategyChildren(true, true); // Show Teams and Grid
+        updateStrategyChildren(true, true);
         toggle(limitOpts, false);
         toggle(progressContainer, false);
         if(startBtnText) startBtnText.innerText = getText('startGame');
-    } else if (mode === 'solo') {
+} else if (mode === 'solo') {
         toggle(strategyOpts, false);
         toggle(limitOpts, true);
         
-        // Restore solo limits safely
-        if(limitBtns.length >= 3) {
-            limitBtns[0].innerText = "10"; limitBtns[0].onclick = () => selectQuestionLimit(10);
-            limitBtns[1].innerText = "50"; limitBtns[1].onclick = () => selectQuestionLimit(50);
-            limitBtns[2].innerText = "100"; limitBtns[2].onclick = () => selectQuestionLimit(100);
-        }
-        selectQuestionLimit(10);
+        if(limitBtns.length >= 4) {
+            // Button 1: Infinity - Add 'text-2xl', remove 'text-sm'
+            limitBtns[0].innerText = "∞"; 
+            limitBtns[0].dataset.limit = "999"; 
+            limitBtns[0].classList.add('text-2xl');       // Make it big
+            limitBtns[0].classList.remove('text-sm', 'md:text-base'); // Remove small font classes
+            limitBtns[0].onclick = () => selectQuestionLimit(999);
 
-        if (state.category !== 'general') {
-            toggle(progressContainer, true);
-        } else {
-            toggle(progressContainer, false);
+            // Button 2: 10 - Standard size
+            limitBtns[1].innerText = "10"; 
+            limitBtns[1].dataset.limit = "10"; 
+            limitBtns[1].classList.remove('text-2xl');    // Ensure it's not big
+            limitBtns[1].classList.add('text-sm', 'md:text-base');
+            limitBtns[1].onclick = () => selectQuestionLimit(10);
+
+            // Button 3: 50
+            limitBtns[2].innerText = "50"; 
+            limitBtns[2].dataset.limit = "50"; 
+            limitBtns[2].classList.remove('text-2xl');
+            limitBtns[2].classList.add('text-sm', 'md:text-base');
+            limitBtns[2].onclick = () => selectQuestionLimit(50);
+            
+            // Button 4: 100
+            limitBtns[3].innerText = "100"; 
+            limitBtns[3].dataset.limit = "100"; 
+            limitBtns[3].classList.remove('text-2xl');
+            limitBtns[3].classList.add('text-sm', 'md:text-base');
+            limitBtns[3].onclick = () => selectQuestionLimit(100);
         }
+        
+        // Select default (Infinity) if not set
+        if (!state.questionLimit) selectQuestionLimit(999);
+        else selectQuestionLimit(state.questionLimit);
+
+        toggle(progressContainer, state.category !== 'general');
         if(startBtnText) startBtnText.innerText = getText('startQuiz');
         if (state.category !== 'general') updateBankStats();
+
     } else if (mode === 'millionaire') {
         toggle(strategyOpts, false);
         toggle(limitOpts, false);
         toggle(progressContainer, false);
         if(startBtnText) startBtnText.innerText = getText('beginRes');
     } else if (mode === 'points') {
-        // Re-order DOM: Ensure Teams (strategyOpts) is before Questions (limitOpts)
         if (strategyOpts && limitOpts && strategyOpts.parentNode) {
             strategyOpts.parentNode.insertBefore(strategyOpts, limitOpts);
         }
 
         toggle(strategyOpts, true);
-        updateStrategyChildren(true, false); // Show Teams, Hide Grid
+        updateStrategyChildren(true, false);
         toggle(limitOpts, true);
         toggle(progressContainer, false);
         
-        // Set specific limits for points battle safely
+        // FIX: Explicitly update dataset.limit for Points mode too
         if(limitBtns.length >= 3) {
-            limitBtns[0].innerText = "30"; limitBtns[0].onclick = () => selectQuestionLimit(30);
-            limitBtns[1].innerText = "60"; limitBtns[1].onclick = () => selectQuestionLimit(60);
-            limitBtns[2].innerText = "120"; limitBtns[2].onclick = () => selectQuestionLimit(120);
+            limitBtns[0].innerText = "30"; 
+            limitBtns[0].dataset.limit = "30";
+            limitBtns[0].onclick = () => selectQuestionLimit(30);
+            
+            limitBtns[1].innerText = "60"; 
+            limitBtns[1].dataset.limit = "60";
+            limitBtns[1].onclick = () => selectQuestionLimit(60);
+            
+            limitBtns[2].innerText = "120"; 
+            limitBtns[2].dataset.limit = "120";
+            limitBtns[2].onclick = () => selectQuestionLimit(120);
         }
-        selectQuestionLimit(30); // Default to 30
+        selectQuestionLimit(30);
 
         if(startBtnText) startBtnText.innerText = getText('beginBattle');
     }
@@ -349,8 +376,10 @@ window.updateBankStats = async function() {
 window.selectQuestionLimit = function(limit) {
     state.questionLimit = parseInt(limit);
     document.querySelectorAll('.limit-btn').forEach(btn => {
-        // Loose equality to match innerText values if needed
-        if(parseInt(btn.innerText) === state.questionLimit) {
+        // Safe check using dataset
+        const btnLimit = parseInt(btn.dataset.limit);
+        
+        if(btnLimit === state.questionLimit) {
             btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
             btn.classList.remove('border-slate-200', 'dark:border-slate-600');
         } else {
@@ -509,13 +538,20 @@ window.startGame = async function() {
 };
 
 window.showQuestion = function() {
+    // 1. CRITICAL FIX: Stop if limit reached (999 is Infinity)
+    if (state.gameMode === 'solo' && state.questionLimit !== 9999 && state.soloTotal >= state.questionLimit) {
+        showSoloSummary();
+        return;
+    }
+
+    // 2. Stop if queue is empty
     if(state.questionQueue.length === 0 && state.gameMode !== 'points') {
         if (state.gameMode === 'solo') showSoloSummary();
         return;
     }
     
+    // Strategy difficulty logic
     if (state.gameMode === 'strategy' && state.targetDifficulty) {
-        // Find first available question of target difficulty
         const idx = state.questionQueue.findIndex(q => parseInt(q.difficulty || 1) === state.targetDifficulty);
         if (idx !== -1) {
             const q = state.questionQueue.splice(idx, 1)[0];
@@ -524,10 +560,9 @@ window.showQuestion = function() {
             renderQuestionModal(q);
             return;
         }
-        // Fallback: if no questions of that difficulty, pick next available
     }
 
-    // Points battle handles getting questions differently (by difficulty) in selectDifficulty
+    // Standard show logic
     if (state.gameMode !== 'points') {
         const q = state.questionQueue.shift();
         state.currentQuestion = q;

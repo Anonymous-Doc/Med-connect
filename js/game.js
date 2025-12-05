@@ -138,8 +138,8 @@ window.updateBankStats = async function() {
 window.selectQuestionLimit = function(limit) {
     state.questionLimit = parseInt(limit);
     document.querySelectorAll('.limit-btn').forEach(btn => {
-        // Loose equality to match innerText values if needed
-        if(parseInt(btn.innerText) === state.questionLimit) {
+        // Updated to use dataset.limit to support the Infinity symbol safely
+        if(parseInt(btn.dataset.limit) === state.questionLimit) {
             btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
             btn.classList.remove('border-slate-200', 'dark:border-slate-600');
         } else {
@@ -298,13 +298,20 @@ window.startGame = async function() {
 };
 
 window.showQuestion = function() {
+    // FIX: Check if we reached the limit in Solo mode
+    // 999 is our code for Infinity
+    if (state.gameMode === 'solo' && state.questionLimit !== 999 && state.soloTotal >= state.questionLimit) {
+        showSoloSummary();
+        return;
+    }
+
     if(state.questionQueue.length === 0 && state.gameMode !== 'points') {
         if (state.gameMode === 'solo') showSoloSummary();
         return;
     }
     
+    // ... existing strategy logic ...
     if (state.gameMode === 'strategy' && state.targetDifficulty) {
-        // Find first available question of target difficulty
         const idx = state.questionQueue.findIndex(q => parseInt(q.difficulty || 1) === state.targetDifficulty);
         if (idx !== -1) {
             const q = state.questionQueue.splice(idx, 1)[0];
@@ -313,10 +320,8 @@ window.showQuestion = function() {
             renderQuestionModal(q);
             return;
         }
-        // Fallback: if no questions of that difficulty, pick next available
     }
 
-    // Points battle handles getting questions differently (by difficulty) in selectDifficulty
     if (state.gameMode !== 'points') {
         const q = state.questionQueue.shift();
         state.currentQuestion = q;
@@ -365,38 +370,89 @@ window.submitTypedAnswer = function(question) {
     const val = input ? input.value.trim() : "";
     if(!val) return;
 
+    // Normalize strings for comparison
     const normUser = val.toLowerCase().replace(/[^a-z0-9]/g, '');
     const normCorrect = question.correct.toLowerCase().replace(/[^a-z0-9]/g, '');
     
+    // Check if correct
     const isCorrect = normUser === normCorrect || normUser.includes(normCorrect) || normCorrect.includes(normUser);
     
-    state.currentResult = isCorrect ? 'correct' : 'wrong';
-    state.currentSelection = val;
+    if (isCorrect) {
+        // --- CORRECT ANSWER ---
+        // Only NOW do we update the state and history
+        state.currentResult = 'correct';
+        state.currentSelection = val;
 
-    if (state.gameMode === 'solo') {
-        state.soloTotal++;
-        if(isCorrect) {
-             state.soloScore++;
-             markQuestionSolved(question.id);
-        } else {
-             saveMistake(question, val, 'riddles');
+        if (state.gameMode === 'solo') {
+            state.soloTotal++;
+            state.soloScore++;
+            markQuestionSolved(question.id);
+        } else if (state.gameMode === 'points') {
+            handlePointsBattleAnswer(true);
         }
+
+        // Determine player for history
+        let playerForHistory = {name: 'Solo', textClass: 'text-slate-500'};
+        if (state.gameMode === 'points') {
+            const pIdx = state.isStealMode ? state.stealingPlayerIndex : state.currentPlayerIndex;
+            playerForHistory = PLAYERS_CONFIG[pIdx];
+        }
+
+        addToHistory(playerForHistory, question, val, true);
+        updateAnswerUI(val, question, true);
+        
+    } else {
+        // --- WRONG ANSWER ---
+        // CRITICAL CHANGE: We do NOT update state.currentResult.
+        // We do NOT add to history.
+        // We just shake the input box to tell the user "Try again".
+        
+        if(input) {
+            // Add red glow and pulse animation
+            input.classList.add('ring-4', 'ring-red-500/50', 'animate-pulse', 'border-red-500');
+            
+            // Remove the animation after 0.5s so they can try again immediately
+            setTimeout(() => {
+                input.classList.remove('ring-4', 'ring-red-500/50', 'animate-pulse', 'border-red-500');
+                input.focus(); // Keep focus so they can keep typing
+            }, 500);
+        }
+    }
+};
+
+// NEW FUNCTION: Manual Override
+window.claimManualCorrect = function() {
+    // 1. Fix Score
+    if (state.gameMode === 'solo') {
+        state.soloScore++;
+        if(state.currentQuestion) markQuestionSolved(state.currentQuestion.id);
+        document.getElementById('live-score-text').innerText = state.soloScore;
+        const acc = state.soloTotal > 0 ? Math.round((state.soloScore / state.soloTotal) * 100) : 100;
+        document.getElementById('live-accuracy-text').innerText = `${acc}%`;
     } else if (state.gameMode === 'points') {
-        handlePointsBattleAnswer(isCorrect);
-    }
-
-    let playerForHistory = {name: 'Solo', textClass: 'text-slate-500'};
-    if (state.gameMode === 'points') {
         const pIdx = state.isStealMode ? state.stealingPlayerIndex : state.currentPlayerIndex;
-        playerForHistory = PLAYERS_CONFIG[pIdx];
+        const pId = PLAYERS_CONFIG[pIdx].id;
+        state.playerScores[pId] = (state.playerScores[pId] || 0) + state.currentDifficultyValue;
+        if(window.renderBattleScoreboard) window.renderBattleScoreboard();
     }
 
-    addToHistory(
-        playerForHistory,
-        question,
-        val,
-        isCorrect
-    );
-
-    updateAnswerUI(val, question, isCorrect);
+    // 2. Fix History
+    if (state.history.length > 0) {
+        const lastEntry = state.history[state.history.length - 1];
+        lastEntry.correct = true;
+        const historyList = document.getElementById('history-container');
+        if(historyList && historyList.firstChild) {
+            historyList.firstChild.classList.remove('border-red-500');
+            historyList.firstChild.classList.add('border-green-500');
+            const badge = historyList.firstChild.querySelector('.bg-red-100');
+            if(badge) {
+                badge.className = "px-1 py-0 rounded text-[8px] font-bold bg-green-100 text-green-700";
+                badge.innerText = getText('goodJob');
+            }
+        }
+    }
+    
+    // 3. Fix UI
+    state.currentResult = 'correct';
+    updateAnswerUI("(Overridden)", state.currentQuestion, true);
 };

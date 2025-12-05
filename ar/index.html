@@ -1,26 +1,18 @@
-
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230ea5e9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-4l-3 9L9 3l-3 9H2'/%3E%3C/svg%3E">
-    <title>Med-Connect | Select Language</title>
+    <title>اختر الفئة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        medical: { 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        arabic: ['Tajawal', 'sans-serif']
-                    },
+                    colors: { medical: { 500: '#0ea5e9', 600: '#0284c7' } },
+                    fontFamily: { sans: ['Tajawal', 'sans-serif'] },
                     animation: {
                         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'fade-in': 'fadeIn 0.6s ease-out forwards'
@@ -35,149 +27,78 @@
             }
         }
     </script>
-    <style>
-        body { margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-    </style>
-
-</script>
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center relative overflow-x-hidden selection:bg-medical-500 selection:text-white p-4">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center p-4 font-sans relative overflow-x-hidden">
     
+    <!-- Ambient Background -->
     <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div class="absolute top-[-10%] left-[-10%] w-[30rem] md:w-[50rem] h-[30rem] md:h-[50rem] bg-medical-500/10 rounded-full blur-[80px] md:blur-[120px] animate-pulse-slow"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[30rem] md:w-[50rem] h-[30rem] md:h-[50rem] bg-purple-600/10 rounded-full blur-[80px] md:blur-[120px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-[20rem] md:w-[40rem] h-[20rem] md:h-[40rem] bg-emerald-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[20rem] md:w-[40rem] h-[20rem] md:h-[40rem] bg-blue-600/10 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 2s;"></div>
     </div>
 
-    <button onclick="document.getElementById('global-settings-modal').classList.remove('hidden')" class="absolute top-6 right-6 z-50 p-3 rounded-full bg-slate-800/50 hover:bg-slate-700 backdrop-blur-md border border-slate-700 text-slate-400 hover:text-white transition-all hover:rotate-90 shadow-lg">
-        <i data-lucide="settings" class="w-6 h-6"></i>
-    </button>
+    <!-- Games Button -->
+    <a href="games/index.html" class="absolute top-6 left-6 z-50 group">
+        <div class="w-12 h-12 md:w-16 md:h-16 bg-slate-800/50 backdrop-blur-md border border-purple-500/30 hover:border-purple-500 rounded-2xl flex items-center justify-center transition-all hover:scale-110 shadow-lg hover:shadow-purple-500/20">
+            <i data-lucide="gamepad-2" class="w-6 h-6 md:w-8 md:h-8 text-purple-400 group-hover:text-white transition-colors"></i>
+        </div>
+        <span class="absolute top-full left-1/2 -translate-x-1/2 mt-2 text-[10px] font-bold text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">لطفيات</span>
+    </a>
 
-    <div class="z-10 w-full max-w-4xl flex flex-col items-center animate-fade-in">
+    <div class="relative z-10 w-full max-w-6xl flex flex-col gap-8 animate-fade-in">
         
-        <div class="text-center mb-10 md:mb-16">
-            <div class="inline-flex items-center justify-center p-4 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl mb-6 ring-1 ring-white/20 transition-transform hover:scale-105 duration-500">
-                <i data-lucide="activity" class="w-10 h-10 md:w-12 md:h-12 text-medical-500 drop-shadow-lg"></i>
-            </div>
-            <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-3 bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-                Med-Connect
-            </h1>
-            <p class="text-slate-400 text-xs md:text-sm font-bold tracking-[0.3em] uppercase opacity-80">
-                Ultimate Medical Knowledge Hub
-            </p>
+        <div class="text-center mb-4">
+            <h1 class="text-3xl md:text-5xl font-black text-white mb-2">القائمة الرئيسية</h1>
+            <p class="text-slate-400 text-sm md:text-base">اختر القسم المناسب</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            <a href="en/index.html" class="group relative overflow-hidden bg-slate-800/40 backdrop-blur-md hover:bg-slate-800/80 border border-slate-700/50 hover:border-medical-500 rounded-[2rem] p-8 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-medical-500/10 flex flex-col">
-                <div class="absolute -top-4 -right-4 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500 rotate-12 group-hover:rotate-0">
-                    <i data-lucide="globe" class="w-32 h-32 text-medical-500"></i>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Educational -->
+            <a href="educational/index.html" class="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-blue-500 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col items-center text-center gap-6 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="p-4 bg-blue-500/20 rounded-2xl border border-blue-500/20 group-hover:bg-blue-500 group-hover:border-blue-500 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <i data-lucide="graduation-cap" class="w-8 h-8 text-blue-400 group-hover:text-white transition-colors"></i>
                 </div>
-                <div class="flex justify-between items-start mb-8 relative z-10">
-                    <div class="w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">🇬🇧</div>
-                    <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-medical-500 group-hover:text-white group-hover:border-medical-400 transition-all duration-300"><i data-lucide="arrow-right" class="w-5 h-5"></i></div>
-                </div>
-                <div class="relative z-10 mt-auto">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-2 text-white group-hover:text-medical-400 transition-colors">English</h2>
-                    <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">Comprehensive clinical cases, pathology, and medical quizzes.</p>
+                <div class="relative z-10">
+                    <h2 class="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors">تعليمي</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">علم الأمراض، الجلدية وحالات سريرية</p>
                 </div>
             </a>
 
-            <a href="ar/index.html" class="group relative overflow-hidden bg-slate-800/40 backdrop-blur-md hover:bg-slate-800/80 border border-slate-700/50 hover:border-emerald-500 rounded-[2rem] p-8 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-500/10 flex flex-col text-right font-arabic">
-                <div class="absolute -top-4 -left-4 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500 -rotate-12 group-hover:rotate-0">
-                    <i data-lucide="languages" class="w-32 h-32 text-emerald-500"></i>
+            <!-- Islamic -->
+            <a href="islamic/index.html" class="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-emerald-500 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-500/10 flex flex-col items-center text-center gap-6 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="p-4 bg-emerald-500/20 rounded-2xl border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:border-emerald-500 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3">
+                    <i data-lucide="moon" class="w-8 h-8 text-emerald-400 group-hover:text-white transition-colors"></i>
                 </div>
-                <div class="flex justify-between items-start mb-8 relative z-10 flex-row-reverse">
-                    <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">🇸🇦</div>
-                    <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-emerald-500 group-hover:text-white group-hover:border-emerald-400 transition-all duration-300"><i data-lucide="arrow-left" class="w-5 h-5"></i></div>
+                <div class="relative z-10">
+                    <h2 class="text-2xl font-bold mb-2 group-hover:text-emerald-400 transition-colors">إسلامي</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">السيرة النبوية والتاريخ الإسلامي</p>
                 </div>
-                <div class="relative z-10 mt-auto">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-2 text-white group-hover:text-emerald-400 transition-colors">العربية</h2>
-                    <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">منصة متكاملة للحالات السريرية، علم الأمراض، والأسئلة الطبية.</p>
+            </a>
+
+            <!-- General -->
+            <a href="general/index.html" class="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-pink-500 rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/10 flex flex-col items-center text-center gap-6 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="p-4 bg-pink-500/20 rounded-2xl border border-pink-500/20 group-hover:bg-pink-500 group-hover:border-pink-500 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <i data-lucide="lightbulb" class="w-8 h-8 text-pink-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <div class="relative z-10">
+                    <h2 class="text-2xl font-bold mb-2 group-hover:text-pink-400 transition-colors">عام</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">ألغاز وتحديات ذكاء</p>
                 </div>
             </a>
         </div>
-        
-        <div class="mt-16 text-slate-600 text-[10px] tracking-[0.2em] uppercase font-bold">Select your preferred language</div>
-    </div>
 
-    <div id="global-settings-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden animate-fade-in">
-        <div class="bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg border border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800/50 p-6 text-center border-b border-slate-800 relative">
-                <button onclick="document.getElementById('global-settings-modal').classList.add('hidden')" class="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-700 text-slate-400 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-                <h2 class="text-xl font-bold text-white">Player Configuration</h2>
-                <p class="text-xs text-slate-400 mt-1">Customize names for multiplayer modes</p>
-            </div>
-            
-            <div class="p-6 overflow-y-auto space-y-4">
-                <div id="player-inputs-container" class="space-y-3">
-                    </div>
-            </div>
-
-            <div class="p-6 bg-slate-800/30 border-t border-slate-800">
-                <button onclick="savePlayerNames()" class="w-full bg-medical-600 hover:bg-medical-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-medical-500/20">
-                    Save Changes
-                </button>
-            </div>
+        <div class="text-center mt-8">
+            <a href="../index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-colors py-2 px-4 rounded-full hover:bg-white/5">
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                <span class="text-sm font-bold">عودة للغة</span>
+            </a>
         </div>
     </div>
 
     <script>
-        // Init Lucide Icons
         lucide.createIcons();
-
-        // Player Colors Configuration
-        const PLAYERS = [
-            { id: 1, color: 'bg-red-500', name: 'Red Player' },
-            { id: 2, color: 'bg-yellow-400', name: 'Yellow Player' },
-            { id: 3, color: 'bg-green-500', name: 'Green Player' },
-            { id: 4, color: 'bg-purple-500', name: 'Purple Player' },
-            { id: 5, color: 'bg-cyan-400', name: 'Cyan Player' },
-            { id: 6, color: 'bg-orange-500', name: 'Orange Player' }
-        ];
-
-        // Load saved names
-        const savedNames = JSON.parse(localStorage.getItem('medconnect_player_names') || '{}');
-
-        // Render Inputs
-        const container = document.getElementById('player-inputs-container');
-        PLAYERS.forEach(p => {
-            const currentName = savedNames[p.id] || p.name;
-            const div = document.createElement('div');
-            div.className = "flex items-center gap-3 bg-slate-800 p-3 rounded-xl border border-slate-700";
-            div.innerHTML = `
-                <div class="w-8 h-8 rounded-full ${p.color} shrink-0 shadow-lg ring-2 ring-white/10"></div>
-                <input type="text" id="p-name-${p.id}" value="${currentName}" 
-                    class="bg-transparent border-none text-white text-sm font-bold w-full focus:ring-0 placeholder-slate-500" 
-                    placeholder="Enter name...">
-                <i data-lucide="edit-3" class="w-4 h-4 text-slate-500"></i>
-            `;
-            container.appendChild(div);
-        });
-        lucide.createIcons();
-
-        function savePlayerNames() {
-            const newNames = {};
-            PLAYERS.forEach(p => {
-                const val = document.getElementById(`p-name-${p.id}`).value.trim();
-                if(val) newNames[p.id] = val;
-            });
-            localStorage.setItem('medconnect_player_names', JSON.stringify(newNames));
-            
-            // Show success feedback
-            const btn = document.querySelector('button[onclick="savePlayerNames()"]');
-            const originalText = btn.innerText;
-            btn.innerText = "Saved!";
-            btn.classList.add('bg-green-600');
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.classList.remove('bg-green-600');
-                document.getElementById('global-settings-modal').classList.add('hidden');
-            }, 800);
-        }
     </script>
 </body>
 </html>

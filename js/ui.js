@@ -11,6 +11,27 @@ window.localizeUI = function() {
     if (riddleInput) riddleInput.placeholder = getText('typeAnswer');
 };
 
+// HELPER: Extract the "Group Key" from a topic string
+// e.g., 'surgery1_extra' -> 'surgery1'
+function getTopicGroup(topic) {
+    if (!topic) return 'other';
+    return topic.split('_')[0]; 
+}
+
+// HELPER: Generate a readable label from a group key
+// e.g., 'surgery1' -> 'Surgery P1'
+// e.g., 'anatomy'  -> 'Anatomy'
+function getGroupLabel(groupKey) {
+    if (groupKey.startsWith('surgery')) {
+        // Extract the number: 'surgery1' -> '1'
+        const num = groupKey.replace('surgery', '');
+        return `Surgery P${num}`;
+    }
+    // Capitalize first letter for others
+    return groupKey.charAt(0).toUpperCase() + groupKey.slice(1);
+}
+
+
 window.toggleSidebar = function() {
     const sb = document.getElementById('sidebar');
     // We no longer need to manipulate main content margins
@@ -61,8 +82,23 @@ window.renderQuestionModal = function(question) {
     const modal = document.getElementById('question-modal');
     if(!modal) return;
     
-    const topicInfo = resolveTopic(question);
+    // 1. Get the topic info
+    let topicInfo = resolveTopic(question);
     
+    // --- CRITICAL FIX: SAFETY CHECK ---
+    // If the game thinks this is MCQ (default) but the question has NO options (like a Riddle),
+    // we FORCE it to be 'input' mode so the text box appears.
+    if (topicInfo.mode === 'mcq' && (!question.options || !Array.isArray(question.options) || question.options.length === 0)) {
+        topicInfo.mode = 'input';
+        
+        // Optional: Force the "Riddle" styling/label if it fell back to General
+        if(topicInfo.label === 'General' || topicInfo.label === 'عام') {
+             topicInfo.label = state.lang === 'ar' ? 'لغز' : 'Riddle';
+             topicInfo.color = 'bg-pink-500';
+        }
+    }
+    // ----------------------------------
+
     let title = state.lang === 'ar' ? (topicInfo.labelAr || topicInfo.label) : topicInfo.label;
     let pillClass = topicInfo.color;
 
@@ -80,18 +116,13 @@ window.renderQuestionModal = function(question) {
     const titleElement = document.getElementById('modal-title');
     if(!titleElement) return;
     
-    // ROBUST PARENT FINDING: Find the main toolbar container (justify-between)
-    // This ensures we inject the badge in the center of the bar, not inside the left wrapper
     const toolsBar = titleElement.closest('.flex.justify-between'); 
     
     if(toolsBar) {
         toolsBar.classList.add('relative');
-        
-        // Remove old badge if exists
         const existingBadge = toolsBar.querySelector('.difficulty-badge');
         if (existingBadge) existingBadge.remove();
 
-        // Title Text Update
         const titleContainer = titleElement.parentNode;
         titleContainer.className = "flex items-center gap-2 title-container relative z-10";
         titleContainer.innerHTML = `
@@ -99,7 +130,6 @@ window.renderQuestionModal = function(question) {
             <span id="modal-title" class="text-[9px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">${title}</span>
         `;
 
-        // Difficulty Badge Injection
         if (question.difficulty) {
             let diffText = state.lang === 'ar' ? "متوسط" : "MEDIUM";
             let diffClass = "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800";
@@ -124,36 +154,23 @@ window.renderQuestionModal = function(question) {
         }
     }
 
-    // Add Report Button next to flag button if not exists
+    // Report Button Logic
     const actionContainer = document.querySelector('.flex.items-center.gap-2:not(.title-container)');
     if(actionContainer) {
-        // Remove existing report button if re-rendering to reset state
         const oldReportBtn = document.getElementById('report-btn');
         if(oldReportBtn) oldReportBtn.remove();
 
-        // Check if already reported
         const isReported = isQuestionReported(question.id);
         let reportBtnHTML;
 
         if (isReported) {
-             reportBtnHTML = `
-                <button id="report-btn" disabled class="p-1.5 rounded-full text-green-500 cursor-not-allowed" title="${getText('reported')}">
-                    <i data-lucide="check" class="w-3 h-3"></i>
-                </button>
-            `;
+             reportBtnHTML = `<button id="report-btn" disabled class="p-1.5 rounded-full text-green-500 cursor-not-allowed" title="${getText('reported')}"><i data-lucide="check" class="w-3 h-3"></i></button>`;
         } else {
-             reportBtnHTML = `
-                <button id="report-btn" onclick="reportCurrentQuestion()" title="${getText('reportQ')}" class="p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                    <i data-lucide="alert-triangle" class="w-3 h-3"></i>
-                </button>
-            `;
+             reportBtnHTML = `<button id="report-btn" onclick="reportCurrentQuestion()" title="${getText('reportQ')}" class="p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><i data-lucide="alert-triangle" class="w-3 h-3"></i></button>`;
         }
 
-        // Insert before the last element (close button) or append
         const flagBtn = document.getElementById('flag-btn');
-        if(flagBtn) {
-            flagBtn.insertAdjacentHTML('afterend', reportBtnHTML);
-        }
+        if(flagBtn) flagBtn.insertAdjacentHTML('afterend', reportBtnHTML);
     }
 
     const optsContainer = document.getElementById('options-container');
@@ -162,9 +179,9 @@ window.renderQuestionModal = function(question) {
     
     if(optsContainer) {
         optsContainer.innerHTML = '';
-        
         const alreadyAnswered = state.currentResult !== null;
         
+        // --- INPUT MODE RENDERING ---
         if (topicInfo.mode === 'input' && !alreadyAnswered) {
             const inputContainer = document.createElement('div');
             inputContainer.className = "flex flex-col gap-3 animate-fade-in";
@@ -172,7 +189,6 @@ window.renderQuestionModal = function(question) {
             const input = document.createElement('input');
             input.type = "text";
             input.placeholder = getText('typeAnswer');
-            // Right align input for Arabic
             input.className = `w-full p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-sm focus:border-medical-500 focus:ring-2 focus:ring-medical-200 dark:focus:ring-medical-900/30 outline-none transition-all ${state.lang === 'ar' ? 'text-right' : 'text-left'}`;
             input.id = "riddle-input";
             input.autocomplete = "off";
@@ -187,6 +203,7 @@ window.renderQuestionModal = function(question) {
             giveUpBtn.className = "text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-bold underline decoration-dotted transition-colors mt-1";
             giveUpBtn.innerText = getText('giveUp');
             giveUpBtn.onclick = () => { 
+                // This will trigger the "Wrong Answer" state, which now has the "Mark Correct" button
                 submitAnswer(null, question); 
             };
 
@@ -194,8 +211,10 @@ window.renderQuestionModal = function(question) {
             inputContainer.appendChild(submitBtn);
             inputContainer.appendChild(giveUpBtn);
             
+            optsContainer.appendChild(inputContainer); 
             setTimeout(() => { if(document.getElementById('riddle-input')) document.getElementById('riddle-input').focus(); }, 100);
         } else {
+            // MCQ or already answered
             if (topicInfo.mode === 'input' && alreadyAnswered) {
                  updateAnswerUI(state.currentSelection, question, state.currentResult === 'correct');
             } else {
@@ -204,6 +223,7 @@ window.renderQuestionModal = function(question) {
         }
     }
 
+    // Stats and Badges Visibility Logic
     const liveStats = document.getElementById('solo-live-stats');
     const finishBtn = document.getElementById('finish-session-container');
     const qPlayerBadge = document.getElementById('q-player-badge');
@@ -248,7 +268,7 @@ window.renderQuestionModal = function(question) {
             
             if (state.gameMode === 'points' && state.isStealMode) {
                  document.getElementById('q-player-badge').classList.add('ring-2', 'ring-red-500');
-                 document.getElementById('q-player-badge').innerText += " (Steal!)";
+                 document.getElementById('q-player-badge').innerText += ` (${getText('stealChance')})`;
             }
         }
     }
@@ -261,7 +281,6 @@ window.renderQuestionModal = function(question) {
     const qText = document.getElementById('question-text');
     if(qText) {
         qText.innerText = question.q;
-        // Arabic text alignment for question
         if (state.lang === 'ar') qText.classList.add('text-right');
         else qText.classList.remove('text-right');
     }
@@ -357,7 +376,11 @@ window.updateFlagButtonState = function(id) {
 
 window.toggleFlagCurrentQuestion = function() {
     if(!state.currentQuestion) return;
-    toggleFlagQuestion(state.currentQuestion, state.selectedSpecialty);
+    // FIX: Use state.selectedTopics[0] instead of state.selectedSpecialty
+    // This ensures the topic (e.g., 'surgery2') is saved with the flag
+    const currentTopic = state.selectedTopics && state.selectedTopics.length > 0 ? state.selectedTopics[0] : 'general';
+    
+    toggleFlagQuestion(state.currentQuestion, currentTopic);
     updateFlagButtonState(state.currentQuestion.id);
 };
 
@@ -365,6 +388,9 @@ window.updateAnswerUI = function(submission, question, isCorrect) {
     const optsContainer = document.getElementById('options-container');
     if(!optsContainer) return;
     const isInputMode = !question.options || !Array.isArray(question.options);
+
+    // Hide correct answer only in Points Battle + Wrong Answer + No Steal yet
+    const hideCorrectAnswer = (state.gameMode === 'points' && !isCorrect && !state.isStealMode);
 
     if (isInputMode) {
         optsContainer.innerHTML = '';
@@ -382,6 +408,7 @@ window.updateAnswerUI = function(submission, question, isCorrect) {
                 </div>
             `;
         } else {
+            // --- NEW: Wrong Answer with "Mark Correct" Button ---
             resultDiv.innerHTML = `
                 <div class="flex flex-col items-center gap-2">
                     <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-1">
@@ -389,7 +416,12 @@ window.updateAnswerUI = function(submission, question, isCorrect) {
                     </div>
                     <h3 class="text-lg font-bold text-red-700 dark:text-red-400">${getText('answerRevealed')}</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-300">${getText('correctAnswer')}</p>
-                    <p class="text-base font-black text-slate-800 dark:text-white">${question.correct}</p>
+                    <p class="text-base font-black text-slate-800 dark:text-white mb-2">${question.correct}</p>
+                    
+                    <button onclick="claimManualCorrect()" class="mt-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-green-500 hover:text-green-600 dark:hover:text-green-400 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-sm">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        <span>Mark as Correct</span>
+                    </button>
                 </div>
             `;
         }
@@ -402,12 +434,16 @@ window.updateAnswerUI = function(submission, question, isCorrect) {
             btn.classList.remove('hover:border-medical-500', 'hover:bg-medical-50', 'dark:hover:bg-slate-800');
             
             if (idx === question.correct) {
-                btn.classList.remove('border-slate-100', 'dark:border-slate-800');
-                btn.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+                if (hideCorrectAnswer) {
+                    btn.classList.add('opacity-50');
+                } else {
+                    btn.classList.remove('border-slate-100', 'dark:border-slate-800');
+                    btn.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
                     const iconSpan = btn.querySelector('span:first-child');
                     iconSpan.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i>`;
                     iconSpan.classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-600');
                     iconSpan.classList.add('bg-green-500', 'text-white');
+                }
             } else if (idx === submission && !isCorrect) {
                 btn.classList.remove('border-slate-100', 'dark:border-slate-800');
                 btn.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
@@ -428,101 +464,98 @@ window.updateAnswerUI = function(submission, question, isCorrect) {
     const nextBtn = document.createElement('button');
     const arrowIcon = state.lang === 'ar' ? 'rtl:rotate-180' : '';
     
+    // --- MODE SPECIFIC BUTTONS ---
     if (state.gameMode === 'solo') {
         nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-medical-600 hover:bg-medical-700";
         nextBtn.innerHTML = `<span>${getText('nextQuestion')}</span><i data-lucide="arrow-right" class="w-3 h-3 ${arrowIcon}"></i>`;
-        nextBtn.onclick = () => {
-            document.getElementById('question-card').classList.add('scale-95');
-            setTimeout(() => showQuestion(), 150);
-        };
+        nextBtn.onclick = () => { document.getElementById('question-card').classList.add('scale-95'); setTimeout(() => showQuestion(), 150); };
+        nextContainer.prepend(nextBtn); 
     } else if (state.gameMode === 'millionaire') {
-        if (isCorrect) {
+         if (isCorrect) {
                 nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700";
                 nextBtn.innerHTML = `<span>${getText('continueClimb')}</span><i data-lucide="chevrons-up" class="w-3 h-3"></i>`;
-                nextBtn.onclick = () => {
-                    document.getElementById('question-modal').classList.add('hidden');
-                    handleMillionaireProgress(true);
-                };
+                nextBtn.onclick = () => { document.getElementById('question-modal').classList.add('hidden'); handleMillionaireProgress(true); };
         } else {
                 nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700";
                 nextBtn.innerHTML = `<span>${getText('seeResults')}</span><i data-lucide="x-circle" class="w-3 h-3"></i>`;
-                nextBtn.onclick = () => {
-                    document.getElementById('question-modal').classList.add('hidden');
-                    handleMillionaireProgress(false);
-                };
+                nextBtn.onclick = () => { document.getElementById('question-modal').classList.add('hidden'); handleMillionaireProgress(false); };
         }
+        nextContainer.prepend(nextBtn);
     } else if (state.gameMode === 'points') {
-        // Points Battle Next Action
+        // --- POINTS BATTLE LOGIC ---
         if (isCorrect) {
-            // Standard correct answer
             nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700";
             nextBtn.innerHTML = `<span>${getText('endTurn')}</span><i data-lucide="arrow-right" class="w-3 h-3 ${arrowIcon}"></i>`;
             nextBtn.onclick = () => {
                 document.getElementById('question-card').classList.add('scale-95');
-                setTimeout(() => {
-                    document.getElementById('question-modal').classList.add('hidden');
-                    finishPointsTurn(true);
-                }, 150);
+                setTimeout(() => { document.getElementById('question-modal').classList.add('hidden'); finishPointsTurn(true); }, 150);
             };
+            nextContainer.prepend(nextBtn);
         } else {
-            // Incorrect Answer
+            // INCORRECT
             if (state.isStealMode) {
-                // Steal Failed
                 nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-slate-600 hover:bg-slate-700";
                 nextBtn.innerHTML = `<span>${getText('endTurn')}</span><i data-lucide="skip-forward" class="w-3 h-3 ${arrowIcon}"></i>`;
                 nextBtn.onclick = () => {
                      document.getElementById('question-card').classList.add('scale-95');
-                     setTimeout(() => {
-                        document.getElementById('question-modal').classList.add('hidden');
-                        finishPointsTurn(false);
-                     }, 150);
+                     setTimeout(() => { document.getElementById('question-modal').classList.add('hidden'); finishPointsTurn(false); }, 150);
                 };
+                nextContainer.prepend(nextBtn);
             } else {
-                // Original Failed -> Steal Chance
+                // FIRST FAIL -> Show Steal (With Name) or Pass
+                const nextPlayerIdx = (state.currentPlayerIndex + 1) % state.activePlayersCount;
+                const nextPlayerName = PLAYERS_CONFIG[nextPlayerIdx].name;
+                
                 nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-orange-500 hover:bg-orange-600";
-                nextBtn.innerHTML = `<span>${getText('attemptSteal')}</span><i data-lucide="zap" class="w-3 h-3"></i>`;
-                nextBtn.onclick = () => {
-                     // Trigger steal mode in Points Battle
-                     initiateSteal();
-                };
+                nextBtn.innerHTML = `<span>${getText('attemptSteal')} <span class="opacity-90">(${nextPlayerName})</span></span><i data-lucide="zap" class="w-3 h-3"></i>`;
+                nextBtn.onclick = () => { initiateSteal(); };
+                nextContainer.prepend(nextBtn);
                 
                 const passBtn = document.createElement('button');
                 passBtn.className = "w-full py-2 rounded-lg font-bold text-slate-600 dark:text-slate-400 text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5 mt-2";
                 passBtn.innerHTML = `<span>${getText('passTurn')}</span>`;
                 passBtn.onclick = () => {
-                    document.getElementById('question-card').classList.add('scale-95');
-                    setTimeout(() => {
-                        document.getElementById('question-modal').classList.add('hidden');
-                        finishPointsTurn(false); // Treat as missed
-                    }, 150);
+                    const allOpts = optsContainer.querySelectorAll('button');
+                    allOpts.forEach((b, i) => {
+                        if(i === question.correct) {
+                            b.classList.remove('border-slate-100', 'dark:border-slate-800', 'opacity-50');
+                            b.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+                            const iconSpan = b.querySelector('span:first-child');
+                            iconSpan.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i>`;
+                            iconSpan.classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-600');
+                            iconSpan.classList.add('bg-green-500', 'text-white');
+                        }
+                    });
+                    lucide.createIcons();
+
+                    nextContainer.innerHTML = '';
+                    const endBtn = document.createElement('button');
+                    endBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg flex items-center justify-center gap-1.5 bg-slate-600 hover:bg-slate-700 animate-fade-in";
+                    endBtn.innerHTML = `<span>${getText('endTurn')}</span><i data-lucide="arrow-right" class="w-3 h-3"></i>`;
+                    endBtn.onclick = () => {
+                        document.getElementById('question-card').classList.add('scale-95');
+                        setTimeout(() => { document.getElementById('question-modal').classList.add('hidden'); finishPointsTurn(false); }, 150);
+                    };
+                    nextContainer.appendChild(endBtn);
+                    if(window.lucide) lucide.createIcons();
                 }
                 nextContainer.appendChild(passBtn);
             }
         }
     } else {
+        // Strategy Mode
         if (isCorrect) {
             nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700";
             nextBtn.innerHTML = `<span>${getText('dropPiece')}</span><i data-lucide="arrow-down-to-line" class="w-3 h-3"></i>`;
-            nextBtn.onclick = () => {
-                    document.getElementById('question-card').classList.add('scale-95');
-                    setTimeout(() => {
-                        document.getElementById('question-modal').classList.add('hidden');
-                        dropPiece(state.pendingColumn);
-                    }, 150);
-            };
+            nextBtn.onclick = () => { document.getElementById('question-card').classList.add('scale-95'); setTimeout(() => { document.getElementById('question-modal').classList.add('hidden'); dropPiece(state.pendingColumn); }, 150); };
         } else {
             nextBtn.className = "w-full py-2 rounded-lg font-bold text-white text-xs shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 bg-slate-600 hover:bg-slate-700";
             nextBtn.innerHTML = `<span>${getText('endTurn')}</span><i data-lucide="skip-forward" class="w-3 h-3 ${arrowIcon}"></i>`;
-            nextBtn.onclick = () => {
-                    document.getElementById('question-card').classList.add('scale-95');
-                    setTimeout(() => {
-                        document.getElementById('question-modal').classList.add('hidden');
-                        switchTurn();
-                    }, 150);
-            };
+            nextBtn.onclick = () => { document.getElementById('question-card').classList.add('scale-95'); setTimeout(() => { document.getElementById('question-modal').classList.add('hidden'); switchTurn(); }, 150); };
         }
+        nextContainer.prepend(nextBtn);
     }
-    nextContainer.prepend(nextBtn); // Prepend if passBtn was added
+
     nextContainer.classList.remove('hidden');
     lucide.createIcons();
 };
@@ -563,18 +596,37 @@ window.reviewMove = function(idx) {
     const modal = document.getElementById('question-modal');
     if(!modal) return;
 
+    // --- MARKER: REMEMBER WE CAME FROM HISTORY ---
+    window.isReviewingHistory = true;
+
+    // --- FORCE CLOSE SIDEBAR (To view question) ---
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        const isRTL = state.lang === 'ar';
+        const hiddenClass = isRTL ? 'translate-x-full' : '-translate-x-full';
+        // If sidebar is open (doesn't have hidden class), close it
+        if (!sidebar.classList.contains(hiddenClass)) {
+            sidebar.classList.add(hiddenClass);
+            state.isSidebarOpen = false;
+        }
+    }
+
+    // 1. Prepare Modal
     const titleEl = document.getElementById('modal-title');
     if(titleEl) titleEl.innerText = "Review";
     
+    // 2. Hide Gameplay Elements
     const elementsToHide = ['q-player-badge', 'solo-live-stats', 'finish-session-container', 'lifelines-container', 'poll-chart', 'next-action-container'];
     elementsToHide.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.classList.add('hidden');
     });
 
+    // 3. Show Close Button
     const closeBtn = document.getElementById('close-review-btn');
     if(closeBtn) closeBtn.classList.remove('hidden');
     
+    // 4. Set Question Text
     const qText = document.getElementById('question-text');
     if(qText) {
         qText.innerText = data.q.q;
@@ -582,11 +634,13 @@ window.reviewMove = function(idx) {
         else qText.classList.remove('text-right');
     }
 
+    // 5. Hide Interactive Buttons
     const flagBtn = document.getElementById('flag-btn');
     if(flagBtn) flagBtn.classList.add('hidden');
     const reportBtn = document.getElementById('report-btn');
     if(reportBtn) reportBtn.classList.add('hidden');
 
+    // 6. Render Options with SOLID CIRCLES
     const cont = document.getElementById('options-container');
     if(cont) {
         cont.innerHTML = '';
@@ -595,15 +649,20 @@ window.reviewMove = function(idx) {
                 const btn = document.createElement('button');
                 const alignClass = state.lang === 'ar' ? 'text-right' : 'text-left';
                 let cls = `w-full ${alignClass} p-2 rounded-lg border-2 transition-colors flex items-center gap-2 cursor-default `;
+                
+                // DEFAULT ICON (Grey)
                 let icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold">${String.fromCharCode(65+i)}</span>`;
                 
                 if(i === data.q.correct) {
+                    // CORRECT: Green Border + Solid Green Circle + White Check
                     cls += "border-green-500 bg-green-50 dark:bg-green-900/30";
-                    icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-green-50 text-white"><i data-lucide="check" class="w-3 h-3"></i></span>`;
+                    icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-green-500 text-white"><i data-lucide="check" class="w-3 h-3 text-white"></i></span>`;
                 } else if(i === data.idx && !data.correct) {
+                    // WRONG: Red Border + Solid Red Circle + White X
                     cls += "border-red-500 bg-red-50 dark:bg-red-900/30";
-                    icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-red-50 text-white"><i data-lucide="x" class="w-3 h-3"></i></span>`;
+                    icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white"><i data-lucide="x" class="w-3 h-3 text-white"></i></span>`;
                 } else {
+                    // OTHER: Faded
                     cls += "border-slate-200 dark:border-slate-700 opacity-60"; 
                 }
                 
@@ -612,6 +671,7 @@ window.reviewMove = function(idx) {
                 cont.appendChild(btn);
             });
         } else {
+            // Input Mode logic...
             const result = document.createElement('div');
             result.className = "flex flex-col gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700";
             const userAns = data.idx ? data.idx : "(Gave up)";
@@ -635,10 +695,38 @@ window.reviewMove = function(idx) {
          const card = document.getElementById('question-card');
          if(card) card.classList.remove('scale-95');
     }, 10);
-    lucide.createIcons();
+    
+    if(window.lucide) lucide.createIcons();
 };
 
 window.closeReviewModal = function() {
+    // 1. If we were reviewing history, RESTORE THE SIDEBAR
+    if (window.isReviewingHistory) {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            const isRTL = state.lang === 'ar';
+            const hiddenClass = isRTL ? 'translate-x-full' : '-translate-x-full';
+            sidebar.classList.remove(hiddenClass);
+            state.isSidebarOpen = true;
+        }
+        window.isReviewingHistory = false; // Reset flag
+        
+        // Just hide the modal directly
+        const modal = document.getElementById('question-modal');
+        const card = document.getElementById('question-card');
+        if(card) card.classList.add('scale-95');
+        setTimeout(() => {
+            if(modal) modal.classList.add('hidden');
+            // Restore buttons for next time
+            const flagBtn = document.getElementById('flag-btn');
+            if(flagBtn) flagBtn.classList.remove('hidden');
+            const reportBtn = document.getElementById('report-btn');
+            if(reportBtn) reportBtn.classList.remove('hidden');
+        }, 200);
+        return;
+    }
+
+    // 2. Standard Game Behavior (Closing mid-game)
     if(state.gameActive && state.currentQuestion) {
             renderQuestionModal(state.currentQuestion);
             const flagBtn = document.getElementById('flag-btn');
@@ -664,16 +752,70 @@ window.closeReviewModal = function() {
 };
 
 // Review History Implementation
-window.openReviewHistory = function() {
-    const modal = document.getElementById('review-modal');
-    if(modal) modal.classList.remove('hidden');
-    switchReviewTab(state.reviewTab || 'mistakes');
-};
 
 window.closeReviewHistory = function() {
     const modal = document.getElementById('review-modal');
     if(modal) modal.classList.add('hidden');
 };
+
+window.openReviewHistory = function() {
+    const modal = document.getElementById('review-modal');
+    if(modal) modal.classList.remove('hidden');
+    
+    // Default filter
+    if(!state.reviewFilter) state.reviewFilter = 'all';
+    
+    // 1. Generate dynamic buttons based on actual history
+    generateReviewFilters();
+    
+    // 2. Open correct tab
+    switchReviewTab(state.reviewTab || 'mistakes');
+};
+
+window.generateReviewFilters = function() {
+    const container = document.getElementById('review-filters-container');
+    if(!container) return;
+    
+    container.innerHTML = '';
+    
+    // Get items (Mistakes or Flagged)
+    const items = state.reviewTab === 'mistakes' ? getMistakes() : getFlagged();
+    
+    // Find all unique groups in history
+    const groupsFound = new Set();
+    items.forEach(item => {
+        if(item.topic) {
+            groupsFound.add(getTopicGroup(item.topic));
+        }
+    });
+    
+    // Always add "All" button
+    container.appendChild(createFilterButton('all', 'All'));
+    
+    // Add buttons for each found group (sorted alphabetically)
+    Array.from(groupsFound).sort().forEach(groupKey => {
+        const label = getGroupLabel(groupKey);
+        container.appendChild(createFilterButton(groupKey, label));
+    });
+};
+
+function createFilterButton(key, label) {
+    const btn = document.createElement('button');
+    btn.onclick = () => filterReview(key);
+    btn.dataset.filter = key;
+    btn.className = "review-filter px-4 py-1.5 rounded-full border text-[10px] font-bold whitespace-nowrap transition-all";
+    
+    if (state.reviewFilter === key) {
+        btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
+        btn.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-400');
+    } else {
+        btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent');
+        btn.classList.add('bg-slate-800', 'border-slate-700', 'text-slate-400', 'hover:border-slate-600');
+    }
+    
+    btn.innerText = label;
+    return btn;
+}
 
 window.switchReviewTab = function(tab) {
     state.reviewTab = tab;
@@ -691,22 +833,14 @@ window.switchReviewTab = function(tab) {
         }
     });
     
+    // Regenerate filters when switching tabs (Flagged items might differ from Mistakes)
+    generateReviewFilters();
     renderReviewContent();
 };
 
 window.filterReview = function(filter) {
     state.reviewFilter = filter;
-    
-    document.querySelectorAll('.review-filter').forEach(btn => {
-        if(btn.dataset.filter === filter) {
-            btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
-            btn.classList.remove('border-slate-300', 'text-slate-500');
-        } else {
-            btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent');
-            btn.classList.add('border-slate-300', 'text-slate-500');
-        }
-    });
-    
+    generateReviewFilters(); // Re-render to update active button state
     renderReviewContent();
 };
 
@@ -717,8 +851,9 @@ window.renderReviewContent = function() {
     
     let items = state.reviewTab === 'mistakes' ? getMistakes() : getFlagged();
     
+    // --- DYNAMIC FILTER LOGIC ---
     if(state.reviewFilter !== 'all') {
-        items = items.filter(i => i.topic === state.reviewFilter || (i.q && i.q.id && i.q.id.includes(state.reviewFilter)));
+        items = items.filter(i => getTopicGroup(i.topic) === state.reviewFilter);
     }
     
     if(items.length === 0) {
@@ -726,18 +861,28 @@ window.renderReviewContent = function() {
         return;
     }
     
-    items.forEach((item, index) => {
+items.forEach((item, index) => {
+        // ... (start of loop)
+        
         const el = document.createElement('div');
         el.className = "bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-3 relative overflow-hidden";
         
         const date = item.date || 'Unknown Date';
         const qText = item.q.q;
-        const topicInfo = resolveTopic(item.q);
+        
+        // FIX: Try to get info from the saved 'topic' first. 
+        // Only use resolveTopic (the ID guesser) as a fallback.
+        let topicInfo = null;
+        if (item.topic && TOPIC_META[item.topic]) {
+            topicInfo = TOPIC_META[item.topic];
+        } else {
+            topicInfo = resolveTopic(item.q);
+        }
+        
         const topicLabel = state.lang === 'ar' ? topicInfo.labelAr : topicInfo.label;
         const num = index + 1;
-        const type = state.reviewTab; // 'mistakes' or 'flagged'
+        const type = state.reviewTab;
 
-        // Header Section
         const header = `
             <div class="flex justify-between items-start mb-3">
                 <div class="flex items-center gap-2">
@@ -753,18 +898,14 @@ window.renderReviewContent = function() {
             </div>
         `;
 
-        // Question Text
         const questionBody = `<p class="text-xs font-bold text-slate-800 dark:text-slate-100 mb-3 leading-relaxed ${state.lang === 'ar' ? 'text-right' : 'text-left'}">${qText}</p>`;
 
-        // Options Section
         let optionsHTML = '<div class="flex flex-col gap-1.5">';
         
         if (item.q.options && Array.isArray(item.q.options)) {
-            // Generate unique ID for flagged collapse logic
             const containerId = `flag-opts-${item.id}`;
             
             if (type === 'mistakes') {
-                // Mistakes View: Show All, Highlight User(Red) and Correct(Green)
                 item.q.options.forEach((opt, idx) => {
                     let borderClass = "border-slate-200 dark:border-slate-700";
                     let bgClass = "bg-transparent";
@@ -791,15 +932,12 @@ window.renderReviewContent = function() {
                     `;
                 });
             } else {
-                // Flagged View: Hidden Answer by default
-                // We wrap the content in a clickable div that toggles a class
+                // Flagged View: Hidden Answer
                 optionsHTML = `<div id="${containerId}" class="flex flex-col gap-1.5 cursor-pointer group" onclick="this.classList.add('revealed')">
                     <div class="text-center text-[9px] text-slate-400 italic mb-1 group-hover:text-medical-500 transition-colors">${getText('clickToReveal')}</div>
                 `;
                 
                 item.q.options.forEach((opt, idx) => {
-                     // Logic: Normal style by default. 
-                     // CSS will target #id.revealed .correct-opt to change style
                      const isCorrect = idx === item.q.correct;
                      const correctClass = isCorrect ? 'correct-opt' : '';
                      
@@ -812,12 +950,6 @@ window.renderReviewContent = function() {
                     `;
                 });
                 
-                // Add inline style block for this specific interaction to avoid external CSS dependency if possible, 
-                // or rely on standard classes. Let's use standard classes logic but inject a small style block or handle via class toggle logic
-                // Actually, simple class toggle is better.
-                // We will need a tiny bit of CSS in the main file or handle style changes via JS click
-                // Let's stick to the onclick adding 'revealed' class and assume some CSS exists or inject style.
-                // Since we can't easily inject CSS into head here, I'll add a style tag to the container.
                  optionsHTML += `<style>
                     #${containerId}.revealed .correct-opt { 
                         border-color: #22c55e; 

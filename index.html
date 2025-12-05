@@ -41,28 +41,22 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/"
-  }
-}
+
 </script>
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center relative overflow-x-hidden selection:bg-medical-500 selection:text-white p-4">
     
-    <!-- Ambient Background -->
     <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div class="absolute top-[-10%] left-[-10%] w-[30rem] md:w-[50rem] h-[30rem] md:h-[50rem] bg-medical-500/10 rounded-full blur-[80px] md:blur-[120px] animate-pulse-slow"></div>
         <div class="absolute bottom-[-10%] right-[-10%] w-[30rem] md:w-[50rem] h-[30rem] md:h-[50rem] bg-purple-600/10 rounded-full blur-[80px] md:blur-[120px] animate-pulse-slow" style="animation-delay: 2s;"></div>
     </div>
 
-    <!-- Main Content -->
+    <button onclick="document.getElementById('global-settings-modal').classList.remove('hidden')" class="absolute top-6 right-6 z-50 p-3 rounded-full bg-slate-800/50 hover:bg-slate-700 backdrop-blur-md border border-slate-700 text-slate-400 hover:text-white transition-all hover:rotate-90 shadow-lg">
+        <i data-lucide="settings" class="w-6 h-6"></i>
+    </button>
+
     <div class="z-10 w-full max-w-4xl flex flex-col items-center animate-fade-in">
         
-        <!-- Header Section -->
         <div class="text-center mb-10 md:mb-16">
             <div class="inline-flex items-center justify-center p-4 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl mb-6 ring-1 ring-white/20 transition-transform hover:scale-105 duration-500">
                 <i data-lucide="activity" class="w-10 h-10 md:w-12 md:h-12 text-medical-500 drop-shadow-lg"></i>
@@ -75,67 +69,115 @@
             </p>
         </div>
 
-        <!-- Responsive Grid: 1 Column on Mobile, 2 Columns on Desktop -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            
-            <!-- English Card -->
             <a href="en/index.html" class="group relative overflow-hidden bg-slate-800/40 backdrop-blur-md hover:bg-slate-800/80 border border-slate-700/50 hover:border-medical-500 rounded-[2rem] p-8 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-medical-500/10 flex flex-col">
-                <!-- Decorative Background Icon -->
                 <div class="absolute -top-4 -right-4 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500 rotate-12 group-hover:rotate-0">
                     <i data-lucide="globe" class="w-32 h-32 text-medical-500"></i>
                 </div>
-                
                 <div class="flex justify-between items-start mb-8 relative z-10">
-                    <div class="w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
-                        🇬🇧
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-medical-500 group-hover:text-white group-hover:border-medical-400 transition-all duration-300">
-                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">🇬🇧</div>
+                    <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-medical-500 group-hover:text-white group-hover:border-medical-400 transition-all duration-300"><i data-lucide="arrow-right" class="w-5 h-5"></i></div>
                 </div>
-                
                 <div class="relative z-10 mt-auto">
                     <h2 class="text-2xl md:text-3xl font-bold mb-2 text-white group-hover:text-medical-400 transition-colors">English</h2>
-                    <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">
-                        Comprehensive clinical cases, pathology, and medical quizzes.
-                    </p>
+                    <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">Comprehensive clinical cases, pathology, and medical quizzes.</p>
                 </div>
             </a>
 
-            <!-- Arabic Card -->
             <a href="ar/index.html" class="group relative overflow-hidden bg-slate-800/40 backdrop-blur-md hover:bg-slate-800/80 border border-slate-700/50 hover:border-emerald-500 rounded-[2rem] p-8 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-500/10 flex flex-col text-right font-arabic">
-                <!-- Decorative Background Icon -->
                 <div class="absolute -top-4 -left-4 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-500 -rotate-12 group-hover:rotate-0">
                     <i data-lucide="languages" class="w-32 h-32 text-emerald-500"></i>
                 </div>
-                
                 <div class="flex justify-between items-start mb-8 relative z-10 flex-row-reverse">
-                    <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">
-                        🇸🇦
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-emerald-500 group-hover:text-white group-hover:border-emerald-400 transition-all duration-300">
-                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-300">🇸🇦</div>
+                    <div class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 group-hover:bg-emerald-500 group-hover:text-white group-hover:border-emerald-400 transition-all duration-300"><i data-lucide="arrow-left" class="w-5 h-5"></i></div>
                 </div>
-                
                 <div class="relative z-10 mt-auto">
                     <h2 class="text-2xl md:text-3xl font-bold mb-2 text-white group-hover:text-emerald-400 transition-colors">العربية</h2>
-                    <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">
-                        منصة متكاملة للحالات السريرية، علم الأمراض، والأسئلة الطبية.
-                    </p>
+                    <p class="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">منصة متكاملة للحالات السريرية، علم الأمراض، والأسئلة الطبية.</p>
                 </div>
             </a>
-
         </div>
         
-        <div class="mt-16 text-slate-600 text-[10px] tracking-[0.2em] uppercase font-bold">
-            Select your preferred language
-        </div>
+        <div class="mt-16 text-slate-600 text-[10px] tracking-[0.2em] uppercase font-bold">Select your preferred language</div>
+    </div>
 
+    <div id="global-settings-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden animate-fade-in">
+        <div class="bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg border border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-800/50 p-6 text-center border-b border-slate-800 relative">
+                <button onclick="document.getElementById('global-settings-modal').classList.add('hidden')" class="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-700 text-slate-400 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <h2 class="text-xl font-bold text-white">Player Configuration</h2>
+                <p class="text-xs text-slate-400 mt-1">Customize names for multiplayer modes</p>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-4">
+                <div id="player-inputs-container" class="space-y-3">
+                    </div>
+            </div>
+
+            <div class="p-6 bg-slate-800/30 border-t border-slate-800">
+                <button onclick="savePlayerNames()" class="w-full bg-medical-600 hover:bg-medical-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-medical-500/20">
+                    Save Changes
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Init Lucide Icons
         lucide.createIcons();
+
+        // Player Colors Configuration
+        const PLAYERS = [
+            { id: 1, color: 'bg-red-500', name: 'Red Player' },
+            { id: 2, color: 'bg-yellow-400', name: 'Yellow Player' },
+            { id: 3, color: 'bg-green-500', name: 'Green Player' },
+            { id: 4, color: 'bg-purple-500', name: 'Purple Player' },
+            { id: 5, color: 'bg-cyan-400', name: 'Cyan Player' },
+            { id: 6, color: 'bg-orange-500', name: 'Orange Player' }
+        ];
+
+        // Load saved names
+        const savedNames = JSON.parse(localStorage.getItem('medconnect_player_names') || '{}');
+
+        // Render Inputs
+        const container = document.getElementById('player-inputs-container');
+        PLAYERS.forEach(p => {
+            const currentName = savedNames[p.id] || p.name;
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-3 bg-slate-800 p-3 rounded-xl border border-slate-700";
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full ${p.color} shrink-0 shadow-lg ring-2 ring-white/10"></div>
+                <input type="text" id="p-name-${p.id}" value="${currentName}" 
+                    class="bg-transparent border-none text-white text-sm font-bold w-full focus:ring-0 placeholder-slate-500" 
+                    placeholder="Enter name...">
+                <i data-lucide="edit-3" class="w-4 h-4 text-slate-500"></i>
+            `;
+            container.appendChild(div);
+        });
+        lucide.createIcons();
+
+        function savePlayerNames() {
+            const newNames = {};
+            PLAYERS.forEach(p => {
+                const val = document.getElementById(`p-name-${p.id}`).value.trim();
+                if(val) newNames[p.id] = val;
+            });
+            localStorage.setItem('medconnect_player_names', JSON.stringify(newNames));
+            
+            // Show success feedback
+            const btn = document.querySelector('button[onclick="savePlayerNames()"]');
+            const originalText = btn.innerText;
+            btn.innerText = "Saved!";
+            btn.classList.add('bg-green-600');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('bg-green-600');
+                document.getElementById('global-settings-modal').classList.add('hidden');
+            }, 800);
+        }
     </script>
 </body>
 </html>

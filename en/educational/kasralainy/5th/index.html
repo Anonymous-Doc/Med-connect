@@ -179,12 +179,17 @@
     <!-- Setup Modal -->
     <div id="setup-modal" class="fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
         <div class="bg-slate-900 rounded-3xl shadow-2xl w-[95%] max-w-md md:max-w-2xl border border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-slate-800/50 p-6 text-center border-b border-slate-800">
-                <div class="w-12 h-12 bg-medical-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 text-medical-500 border border-medical-500/20 shadow-inner">
-                    <i data-lucide="settings-2" class="w-6 h-6"></i>
-                </div>
-                <h2 class="text-2xl font-black text-white tracking-tight" data-i18n="config">Configuration</h2>
-            </div>
+<div class="bg-slate-800/50 p-6 text-center border-b border-slate-800 relative">
+    
+    <button onclick="openReviewHistory()" class="absolute top-4 right-4 p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 shadow-lg transition-all hover:scale-105 active:scale-95 group z-10" title="Review History">
+        <i data-lucide="history" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+    </button>
+
+    <div class="w-12 h-12 bg-medical-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 text-medical-500 border border-medical-500/20 shadow-inner">
+        <i data-lucide="settings-2" class="w-6 h-6"></i>
+    </div>
+    <h2 class="text-2xl font-black text-white tracking-tight" data-i18n="config">Configuration</h2>
+</div>
             <div class="p-6 overflow-y-auto space-y-6 custom-scrollbar flex-1">
                 
                 <div class="space-y-3">
@@ -256,14 +261,16 @@
                     </div>
                 </div>
 
-                <div id="question-limit-options" class="space-y-3 hidden">
-                    <label class="block text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider" data-i18n="questions">Questions</label>
-                    <div class="flex gap-3">
-                        <button onclick="selectQuestionLimit(10)" class="limit-btn flex-1 py-3 rounded-xl border-2 border-slate-700 hover:border-slate-600 bg-slate-800 hover:bg-slate-700 font-bold text-sm md:text-base transition-all" data-limit="10">10</button>
-                        <button onclick="selectQuestionLimit(50)" class="limit-btn flex-1 py-3 rounded-xl border-2 border-slate-700 hover:border-slate-600 bg-slate-800 hover:bg-slate-700 font-bold text-sm md:text-base transition-all" data-limit="50">50</button>
-                        <button onclick="selectQuestionLimit(100)" class="limit-btn flex-1 py-3 rounded-xl border-2 border-slate-700 hover:border-slate-600 bg-slate-800 hover:bg-slate-700 font-bold text-sm md:text-base transition-all" data-limit="100">100</button>
-                    </div>
-                </div>
+<div id="question-limit-options" class="space-y-3 hidden">
+    <label class="block text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider" data-i18n="questions">Questions</label>
+    <div class="flex gap-3">
+        <button onclick="selectQuestionLimit(999)" class="limit-btn flex-1 py-3 rounded-xl border-2 border-slate-700 hover:border-slate-600 bg-slate-800 hover:bg-slate-700 font-bold text-sm md:text-base transition-all" data-limit="999">∞</button>
+        
+        <button onclick="selectQuestionLimit(10)" class="limit-btn flex-1 py-3 rounded-xl border-2 border-slate-700 hover:border-slate-600 bg-slate-800 hover:bg-slate-700 font-bold text-sm md:text-base transition-all" data-limit="10">10</button>
+        <button onclick="selectQuestionLimit(50)" class="limit-btn flex-1 py-3 rounded-xl border-2 border-slate-700 hover:border-slate-600 bg-slate-800 hover:bg-slate-700 font-bold text-sm md:text-base transition-all" data-limit="50">50</button>
+        <button onclick="selectQuestionLimit(100)" class="limit-btn flex-1 py-3 rounded-xl border-2 border-slate-700 hover:border-slate-600 bg-slate-800 hover:bg-slate-700 font-bold text-sm md:text-base transition-all" data-limit="100">100</button>
+    </div>
+</div>
 
                 <div id="strategy-options" class="space-y-4">
                     <div class="border-t border-slate-800 pt-4">
@@ -393,12 +400,8 @@
                 <button onclick="switchReviewTab('mistakes')" class="review-tab flex-1 py-2 rounded-lg text-xs font-bold transition-all" id="tab-mistakes" data-i18n="mistakes">Mistakes</button>
                 <button onclick="switchReviewTab('flagged')" class="review-tab flex-1 py-2 rounded-lg text-xs font-bold transition-all" id="tab-flagged" data-i18n="flagged">Flagged</button>
             </div>
-            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                <button onclick="filterReview('all')" class="review-filter px-4 py-1.5 rounded-full border text-[10px] font-bold whitespace-nowrap bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600" data-filter="all" data-i18n="fAll">All</button>
-                <button onclick="filterReview('surgery1')" class="review-filter px-4 py-1.5 rounded-full border text-[10px] font-bold whitespace-nowrap bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600" data-filter="surgery1" data-i18n="desc_surgery1">Paper 1</button>
-                <button onclick="filterReview('surgery2')" class="review-filter px-4 py-1.5 rounded-full border text-[10px] font-bold whitespace-nowrap bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600" data-filter="surgery2" data-i18n="desc_surgery2">Paper 2</button>
-                <button onclick="filterReview('surgery3')" class="review-filter px-4 py-1.5 rounded-full border text-[10px] font-bold whitespace-nowrap bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600" data-filter="surgery3" data-i18n="desc_surgery3">Paper 3</button>
-            </div>
+<div id="review-filters-container" class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+    </div>
         </div>
         <div id="review-content" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-slate-950"></div>
         <div class="p-4 bg-slate-900 border-t border-slate-800 text-center">
