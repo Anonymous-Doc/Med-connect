@@ -12,7 +12,7 @@ function initPointsBattle() {
         // Scoreboard container reuse logic
         const scoreboard = document.createElement('div');
         scoreboard.id = 'battle-scoreboard';
-        scoreboard.className = 'w-full max-w-4xl flex justify-center gap-1.5 px-1 overflow-x-auto no-scrollbar py-0.5 min-h-[50px] shrink-0';
+        scoreboard.className = 'w-full max-w-4xl flex justify-center gap-1.5 px-1 overflow-x-auto no-scrollbar py-4 min-h-[70px] shrink-0';
         
         const buttonsContainer = document.createElement('div');
         buttonsContainer.className = 'flex flex-col gap-4 w-full max-w-sm';

@@ -1,5 +1,3 @@
-
-
 function handleColumnClick(c) {
     // 1. Check if game is active and in correct mode
     if(!state.gameActive || (state.gameMode !== 'strategy')) return;
@@ -129,8 +127,8 @@ function renderGrid(animPos = null) {
         for(let c=0; c<state.activeColCount; c++) {
             const cell = document.createElement('div');
             
-            // Base styling
-            let classes = "w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 aspect-square rounded-full flex items-center justify-center shadow-inner transition-all duration-300 ";
+            // Updated styling: Fluid width, aspect-square
+            let classes = "w-full aspect-square rounded-full flex items-center justify-center shadow-inner transition-all duration-300 ";
             
             const val = state.board[r][c];
             if(val === 0) {
@@ -163,7 +161,8 @@ function renderHeaders() {
     
     for(let i=0; i<state.activeColCount; i++) {
         const el = document.createElement('div');
-        el.className = "text-[9px] font-bold text-white/50";
+        // Increased font size significantly for visibility
+        el.className = "text-sm md:text-xl font-black text-slate-400/80 flex items-center justify-center";
         el.innerText = i+1;
         h.appendChild(el);
     }
@@ -178,7 +177,7 @@ function renderSelectors() {
     
     for(let c=0; c<state.activeColCount; c++) {
         const el = document.createElement('div');
-        el.className = "cursor-pointer hover:bg-white/10 transition-colors rounded-full h-full";
+        el.className = "cursor-pointer hover:bg-white/5 transition-colors rounded-full h-full";
         // Important: Bind click event
         el.onclick = () => handleColumnClick(c);
         s.appendChild(el);
@@ -196,16 +195,24 @@ function renderScoreboard() {
         const score = state.playerScores[p.id];
         
         const card = document.createElement('div');
-        const activeClass = active ? 
-            `bg-white dark:bg-slate-800 scale-105 shadow-xl z-10 ${p.ringClass.replace('ring-','border-')}` : 
-            'bg-slate-100 dark:bg-slate-800/50 border-transparent opacity-60 scale-95';
+        
+        // Modified active classes to avoid clipping and ensure visibility
+        let activeClass = active ? 
+            `bg-white dark:bg-slate-800 shadow-lg ring-2 ring-inset ${p.ringClass} z-10 opacity-100` : 
+            'bg-slate-100 dark:bg-slate-800/40 border-2 border-transparent opacity-50 grayscale hover:opacity-75 transition-opacity';
             
-        card.className = `flex flex-col items-center justify-center p-1.5 rounded-lg border-2 transition-all min-w-[60px] ${activeClass}`;
+        // Layout: Mobile (Row items), Desktop (Column items)
+        // Removed 'scale' transforms that might cause clipping
+        card.className = `flex flex-col md:flex-row items-center justify-between p-2 md:p-3 rounded-xl transition-all duration-300 cursor-default flex-1 md:flex-none w-full min-w-[80px] md:w-full mb-0 md:mb-2 ${activeClass}`;
         
         card.innerHTML = `
-            <div class="w-2 h-2 rounded-full mb-0.5 ${p.colorClass}"></div>
-            <span class="text-[10px] font-bold ${p.textClass}">${p.name}</span>
-            <span class="text-[9px] font-bold bg-slate-200 dark:bg-slate-700 px-1 py-0 rounded mt-0.5 text-slate-600 dark:text-slate-300">${score}</span>
+            <div class="flex flex-col md:flex-row items-center gap-1 md:gap-3 w-full md:w-auto">
+                <div class="w-3 h-3 md:w-4 md:h-4 rounded-full shadow-sm ${p.colorClass} ring-1 ring-offset-1 dark:ring-offset-slate-800 ring-white/20"></div>
+                <span class="text-[10px] md:text-sm font-bold ${p.textClass} uppercase tracking-wider truncate w-full text-center md:text-left">${p.name}</span>
+            </div>
+            <div class="flex items-center mt-1 md:mt-0">
+                <span class="text-xs md:text-lg font-black bg-slate-200 dark:bg-slate-900/50 px-2 py-0.5 md:py-1 rounded text-slate-700 dark:text-slate-200 min-w-[1.5rem] text-center">${score}</span>
+            </div>
         `;
         sb.appendChild(card);
     }

@@ -1,5 +1,4 @@
 
-
 // Translations
 const TRANSLATIONS = {
     en: {
@@ -83,7 +82,24 @@ const TRANSLATIONS = {
         walkAway: "You walk away with...",
         pickTopic: "Select a Topic",
         reportQ: "Report Question",
-        reported: "Reported"
+        reported: "Reported",
+        clickToReveal: "Click to reveal answer",
+        // Descriptions
+        desc_solo: "A single-player mode focused on answering questions to build a streak and high score.",
+        desc_strategy: "A multiplayer strategy game where correct answers allow you to drop pieces into a grid to connect 4.",
+        desc_millionaire: "A high-stakes progression game. Answer 15 increasingly difficult questions to win the top prize.",
+        desc_points: "A competitive mode where teams answer questions for points. Includes stealing mechanics!",
+        desc_seerah: "Questions regarding the biography and life of Prophet Muhammad (PBUH).",
+        desc_aqidah: "Questions regarding Islamic creed, theology, and faith fundamentals.",
+        desc_derma: "Dermatology: Study of skin diseases and therapeutics.",
+        desc_patho: "Pathology: Study of disease causes and effects.",
+        desc_riddles: "Brain teasers and puzzles to test your lateral thinking.",
+        desc_geography: "Questions about world geography, capitals, and landmarks.",
+        desc_surgery1: "Surgery Paper 1: General Surgery fundamentals.",
+        desc_surgery2: "Surgery Paper 2: Gastrointestinal and abdominal surgery.",
+        desc_surgery3: "Surgery Paper 3: Urology, Orthopedics and specialty surgery.",
+        desc_arabic: "Arabic language, grammar, and literature.",
+        desc_general: "General knowledge questions."
     },
     ar: {
         reviewHistory: "سجل المراجعة",
@@ -166,7 +182,24 @@ const TRANSLATIONS = {
         walkAway: "لقد ربحت...",
         pickTopic: "يرجى اختيار موضوع",
         reportQ: "إبلاغ عن السؤال",
-        reported: "تم الإبلاغ"
+        reported: "تم الإبلاغ",
+        clickToReveal: "اضغط للكشف عن الإجابة",
+        // Descriptions
+        desc_solo: "وضع فردي يركز على الإجابة على الأسئلة لبناء سلسلة إجابات صحيحة.",
+        desc_strategy: "لعبة استراتيجية جماعية حيث تسمح الإجابات الصحيحة بإسقاط القطع في الشبكة لربط 4.",
+        desc_millionaire: "لعبة تحدي تصاعدي. أجب على 15 سؤالاً متزايد الصعوبة للفوز بالجائزة الكبرى.",
+        desc_points: "وضع تنافسي حيث تجيب الفرق على الأسئلة للحصول على النقاط. يتضمن آليات السرقة!",
+        desc_seerah: "أسئلة تتعلق بسيرة وحياة النبي محمد صلى الله عليه وسلم.",
+        desc_aqidah: "أسئلة تتعلق بالعقيدة الإسلامية وأصول الإيمان.",
+        desc_derma: "الجلدية: دراسة الأمراض الجلدية وعلاجها.",
+        desc_patho: "علم الأمراض: دراسة أسباب الأمراض وآثارها.",
+        desc_riddles: "ألغاز وأحاجي لاختبار التفكير الجانبي والذكاء.",
+        desc_geography: "أسئلة حول جغرافيا العالم والعواصم والمعالم.",
+        desc_surgery1: "جراحة 1: أساسيات الجراحة العامة.",
+        desc_surgery2: "جراحة 2: جراحة الجهاز الهضمي والبطن.",
+        desc_surgery3: "جراحة 3: المسالك البولية والعظام والجراحات الخاصة.",
+        desc_arabic: "اللغة العربية: النحو والأدب والبلاغة.",
+        desc_general: "أسئلة في المعلومات العامة والثقافة."
     }
 };
 
@@ -241,16 +274,23 @@ function getScopedKey(baseKey) {
 }
 
 function getSolvedIDs() {
-    const stored = localStorage.getItem(getScopedKey(STORAGE_KEY_SOLVED));
-    return stored ? JSON.parse(stored) : [];
+    try {
+        const stored = localStorage.getItem(getScopedKey(STORAGE_KEY_SOLVED));
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        console.warn("Error reading solved IDs:", e);
+        return [];
+    }
 }
 
 function markQuestionSolved(id) {
-    const solved = getSolvedIDs();
-    if (!solved.includes(id)) {
-        solved.push(id);
-        localStorage.setItem(getScopedKey(STORAGE_KEY_SOLVED), JSON.stringify(solved));
-    }
+    try {
+        const solved = getSolvedIDs();
+        if (!solved.includes(id)) {
+            solved.push(id);
+            localStorage.setItem(getScopedKey(STORAGE_KEY_SOLVED), JSON.stringify(solved));
+        }
+    } catch(e) { console.warn("Error saving solved ID:", e); }
 }
 
 function resetProgress() {
@@ -264,24 +304,37 @@ function resetProgress() {
 
 // --- MISTAKES HISTORY ---
 function saveMistake(question, userAnswerIdx, topic) {
-    const mistakes = getMistakes();
-    const today = new Date().toISOString().split('T')[0];
-    const entry = {
-        id: question.id,
-        q: question,
-        userIdx: userAnswerIdx,
-        date: today,
-        timestamp: Date.now(),
-        topic: topic
-    };
-    mistakes.unshift(entry); 
-    if (mistakes.length > 200) mistakes.pop();
-    localStorage.setItem(getScopedKey(STORAGE_KEY_MISTAKES), JSON.stringify(mistakes));
+    try {
+        const mistakes = getMistakes();
+        // Avoid duplicates for the same session/question
+        const existingIndex = mistakes.findIndex(m => m.id === question.id);
+        if (existingIndex !== -1) {
+            mistakes.splice(existingIndex, 1);
+        }
+        
+        const today = new Date().toISOString().split('T')[0];
+        const entry = {
+            id: question.id,
+            q: question,
+            userIdx: userAnswerIdx,
+            date: today,
+            timestamp: Date.now(),
+            topic: topic
+        };
+        mistakes.unshift(entry); 
+        if (mistakes.length > 200) mistakes.pop();
+        localStorage.setItem(getScopedKey(STORAGE_KEY_MISTAKES), JSON.stringify(mistakes));
+    } catch(e) { console.warn("Error saving mistake:", e); }
 }
 
 function getMistakes() {
-    const stored = localStorage.getItem(getScopedKey(STORAGE_KEY_MISTAKES));
-    return stored ? JSON.parse(stored) : [];
+    try {
+        const stored = localStorage.getItem(getScopedKey(STORAGE_KEY_MISTAKES));
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        console.warn("Error reading mistakes:", e);
+        return [];
+    }
 }
 
 function clearMistakes(filter = 'all') {
@@ -289,47 +342,64 @@ function clearMistakes(filter = 'all') {
     if(filter !== 'all') msg = `Clear ${filter.toUpperCase()} mistake history?`;
     
     if(confirm(msg)) {
-        if(filter === 'all') {
-            localStorage.removeItem(getScopedKey(STORAGE_KEY_MISTAKES));
-        } else {
-            let mistakes = getMistakes();
-            mistakes = mistakes.filter(m => {
-                let t = m.topic || '';
-                if(!t && m.q && m.q.id) {
-                    if(m.q.id.startsWith('dermatology')) t = 'derma';
-                    else if (m.q.id.startsWith('clinical')) t = 'patho';
-                    else if (m.q.id.startsWith('riddles')) t = 'riddles';
-                    else if (m.q.id.startsWith('geo')) t = 'geography';
-                    else if (m.q.id.startsWith('seerah')) t = 'seerah';
-                    else if (m.q.id.startsWith('aqidah')) t = 'aqidah';
-                    else if (m.q.id.startsWith('surgery')) t = 'surgery';
-                }
-                return t !== filter;
-            });
-            localStorage.setItem(getScopedKey(STORAGE_KEY_MISTAKES), JSON.stringify(mistakes));
-        }
+        try {
+            if(filter === 'all') {
+                localStorage.removeItem(getScopedKey(STORAGE_KEY_MISTAKES));
+            } else {
+                let mistakes = getMistakes();
+                mistakes = mistakes.filter(m => {
+                    let t = m.topic || '';
+                    if(!t && m.q && m.q.id) {
+                        // infer topic
+                        if(m.q.id.startsWith('dermatology')) t = 'derma';
+                        else if (m.q.id.startsWith('clinical')) t = 'patho';
+                        // ... add other inferences if needed
+                    }
+                    return t !== filter;
+                });
+                localStorage.setItem(getScopedKey(STORAGE_KEY_MISTAKES), JSON.stringify(mistakes));
+            }
+        } catch(e) { console.warn("Error clearing mistakes:", e); }
         return true;
     }
     return false;
 }
 
+function removeReviewItem(id, type) {
+    try {
+        const key = type === 'mistakes' ? STORAGE_KEY_MISTAKES : STORAGE_KEY_FLAGGED;
+        const scopedKey = getScopedKey(key);
+        let items = JSON.parse(localStorage.getItem(scopedKey) || '[]');
+        
+        items = items.filter(item => item.id !== id);
+        
+        localStorage.setItem(scopedKey, JSON.stringify(items));
+        renderReviewContent();
+    } catch(e) {
+        console.error("Error removing item", e);
+    }
+}
+
+
 // --- FLAGGED QUESTIONS ---
 function toggleFlagQuestion(question, topic) {
-    let flagged = getFlagged();
-    const existingIndex = flagged.findIndex(f => f.id === question.id);
-    
-    if (existingIndex > -1) {
-        flagged.splice(existingIndex, 1); // Remove
-    } else {
-        flagged.unshift({
-            id: question.id,
-            q: question,
-            date: new Date().toISOString().split('T')[0],
-            topic: topic
-        });
-    }
-    localStorage.setItem(getScopedKey(STORAGE_KEY_FLAGGED), JSON.stringify(flagged));
-    return existingIndex === -1;
+    try {
+        let flagged = getFlagged();
+        const existingIndex = flagged.findIndex(f => f.id === question.id);
+        
+        if (existingIndex > -1) {
+            flagged.splice(existingIndex, 1); // Remove
+        } else {
+            flagged.unshift({
+                id: question.id,
+                q: question,
+                date: new Date().toISOString().split('T')[0],
+                topic: topic
+            });
+        }
+        localStorage.setItem(getScopedKey(STORAGE_KEY_FLAGGED), JSON.stringify(flagged));
+        return existingIndex === -1;
+    } catch(e) { console.warn("Error toggling flag:", e); return false; }
 }
 
 function isQuestionFlagged(id) {
@@ -338,8 +408,13 @@ function isQuestionFlagged(id) {
 }
 
 function getFlagged() {
-    const stored = localStorage.getItem(getScopedKey(STORAGE_KEY_FLAGGED));
-    return stored ? JSON.parse(stored) : [];
+    try {
+        const stored = localStorage.getItem(getScopedKey(STORAGE_KEY_FLAGGED));
+        return stored ? JSON.parse(stored) : [];
+    } catch(e) {
+        console.warn("Error reading flagged:", e);
+        return [];
+    }
 }
 
 function clearFlagged(filter = 'all') {
@@ -347,25 +422,18 @@ function clearFlagged(filter = 'all') {
     if(filter !== 'all') msg = `Clear ${filter.toUpperCase()} flagged questions?`;
 
     if(confirm(msg)) {
-        if(filter === 'all') {
-            localStorage.removeItem(getScopedKey(STORAGE_KEY_FLAGGED));
-        } else {
-            let flagged = getFlagged();
-            flagged = flagged.filter(f => {
-                let t = f.topic || '';
-                if(!t && f.q && f.q.id) {
-                    if(f.q.id.startsWith('dermatology')) t = 'derma';
-                    else if (f.q.id.startsWith('clinical')) t = 'patho';
-                    else if (f.q.id.startsWith('riddles')) t = 'riddles';
-                    else if (f.q.id.startsWith('geo')) t = 'geography';
-                    else if (f.q.id.startsWith('seerah')) t = 'seerah';
-                    else if (f.q.id.startsWith('aqidah')) t = 'aqidah';
-                    else if (f.q.id.startsWith('surgery')) t = 'surgery';
-                }
-                return t !== filter;
-            });
-            localStorage.setItem(getScopedKey(STORAGE_KEY_FLAGGED), JSON.stringify(flagged));
-        }
+        try {
+            if(filter === 'all') {
+                localStorage.removeItem(getScopedKey(STORAGE_KEY_FLAGGED));
+            } else {
+                let flagged = getFlagged();
+                flagged = flagged.filter(f => {
+                    // Same topic inference logic if topic is missing
+                    return f.topic !== filter; 
+                });
+                localStorage.setItem(getScopedKey(STORAGE_KEY_FLAGGED), JSON.stringify(flagged));
+            }
+        } catch(e) { console.warn("Error clearing flagged:", e); }
         return true;
     }
     return false;

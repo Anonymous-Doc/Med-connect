@@ -1,4 +1,5 @@
 
+
 window.selectGameMode = function(mode) {
     state.gameMode = mode;
     document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -197,7 +198,8 @@ window.startGame = async function() {
         }
     }
 
-    document.getElementById('setup-modal').classList.add('hidden');
+    const setupModal = document.getElementById('setup-modal');
+    if(setupModal) setupModal.classList.add('hidden');
     
     const reviewBtn = document.getElementById('sidebar-review-container');
     if(reviewBtn) {
@@ -207,21 +209,26 @@ window.startGame = async function() {
     
     state.history = [];
     state.gameActive = true;
-    document.getElementById('history-container').innerHTML = '';
+    const histCont = document.getElementById('history-container');
+    if(histCont) histCont.innerHTML = '';
 
-    // Reset UIs
-    document.getElementById('strategy-ui').classList.add('hidden');
-    document.getElementById('solo-ui').classList.add('hidden');
-    document.getElementById('millionaire-ui').classList.add('hidden');
-    if(document.getElementById('points-battle-ui')) document.getElementById('points-battle-ui').classList.add('hidden');
-    document.getElementById('solo-ui').classList.remove('flex');
+    // Reset UIs safely
+    const els = ['strategy-ui', 'solo-ui', 'millionaire-ui', 'points-battle-ui'];
+    els.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('hidden');
+    });
+    const soloUI = document.getElementById('solo-ui');
+    if(soloUI) soloUI.classList.remove('flex');
 
     if(state.gameMode === 'solo') {
         state.questionQueue = db.sort(() => Math.random() - 0.5);
         state.soloScore = 0;
         state.soloTotal = 0;
-        document.getElementById('solo-ui').classList.remove('hidden');
-        document.getElementById('solo-ui').classList.add('flex');
+        if(soloUI) {
+            soloUI.classList.remove('hidden');
+            soloUI.classList.add('flex');
+        }
         setTimeout(showQuestion, 300); 
     } 
     else if (state.gameMode === 'millionaire') {
@@ -246,8 +253,11 @@ window.startGame = async function() {
         state.ladderIndex = 0;
         state.safeAmount = 0;
         state.lifelines = { '5050': true, 'poll': true, 'consult': true };
-        document.getElementById('millionaire-ui').classList.remove('hidden');
-        document.getElementById('millionaire-ui').classList.add('flex');
+        const milUI = document.getElementById('millionaire-ui');
+        if(milUI) {
+            milUI.classList.remove('hidden');
+            milUI.classList.add('flex');
+        }
         renderLadder();
         updateMillionaireDisplay();
     }
@@ -278,7 +288,8 @@ window.startGame = async function() {
         for(let i=1; i<=state.activePlayersCount; i++) {
             state.playerScores[i] = 0;
         }
-        document.getElementById('strategy-ui').classList.remove('hidden');
+        const stratUI = document.getElementById('strategy-ui');
+        if(stratUI) stratUI.classList.remove('hidden');
         renderGrid();
         renderSelectors();
         renderScoreboard();
@@ -303,7 +314,6 @@ window.showQuestion = function() {
             return;
         }
         // Fallback: if no questions of that difficulty, pick next available
-        // This prevents game lock if one difficulty tier runs out
     }
 
     // Points battle handles getting questions differently (by difficulty) in selectDifficulty
@@ -352,7 +362,7 @@ window.submitAnswer = function(idx, question) {
 
 window.submitTypedAnswer = function(question) {
     const input = document.getElementById('riddle-input');
-    const val = input.value.trim();
+    const val = input ? input.value.trim() : "";
     if(!val) return;
 
     const normUser = val.toLowerCase().replace(/[^a-z0-9]/g, '');

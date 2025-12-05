@@ -12,55 +12,85 @@
             theme: {
                 extend: {
                     colors: { medical: { 500: '#0ea5e9', 600: '#0284c7' } },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.6s ease-out forwards'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
                 }
             }
         }
     </script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center p-4 font-sans relative overflow-x-hidden">
     
-    <div class="mb-8 text-center animate-fade-in">
-        <h1 class="text-3xl md:text-4xl font-black mb-2">Academic Years</h1>
-        <p class="text-slate-400">Kasr Al-Ainy School of Medicine</p>
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[40rem] h-[20rem] bg-medical-500/10 rounded-full blur-[100px] animate-pulse-slow"></div>
     </div>
 
-    <div class="max-w-5xl w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 animate-fade-in">
-        <!-- First Year -->
-        <a href="1st/index.html" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-medical-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-medical-500 group-hover:bg-medical-500/10 transition-colors">1</div>
-            <h3 class="font-bold text-lg group-hover:text-medical-400 transition-colors">First Year</h3>
+    <!-- Header -->
+    <header class="p-4 flex items-center border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-md sticky top-0 z-20 w-full absolute">
+        <a href="../index.html" class="p-2 rounded-lg hover:bg-slate-800 transition-colors">
+            <i data-lucide="arrow-left" class="w-5 h-5 text-slate-400"></i>
         </a>
+        <h1 class="ml-4 text-lg font-bold flex items-center gap-2 text-white">
+            <i data-lucide="building-2" class="w-5 h-5 text-medical-500"></i>
+            <span>Kasr Al-Ainy</span>
+        </h1>
+    </header>
 
-        <!-- Second Year -->
-        <a href="2nd/index.html" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-purple-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-purple-500 group-hover:bg-purple-500/10 transition-colors">2</div>
-            <h3 class="font-bold text-lg group-hover:text-purple-400 transition-colors">Second Year</h3>
-        </a>
+    <div class="relative z-10 w-full max-w-6xl flex flex-col gap-8 animate-fade-in mt-16">
+        
+        <div class="text-center mb-4">
+            <h1 class="text-3xl md:text-5xl font-black text-white mb-2">Academic Years</h1>
+            <p class="text-slate-400 text-sm md:text-base">Select your study year</p>
+        </div>
 
-        <!-- Third Year -->
-        <a href="3rd/index.html" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-green-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-green-500 group-hover:bg-green-500/10 transition-colors">3</div>
-            <h3 class="font-bold text-lg group-hover:text-green-400 transition-colors">Third Year</h3>
-        </a>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- First Year -->
+            <a href="1st/index.html" class="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-medical-500 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-medical-500/10 flex flex-col items-center text-center gap-4 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-medical-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 group-hover:border-medical-500/50 flex items-center justify-center text-2xl font-black text-slate-500 group-hover:text-medical-400 group-hover:bg-medical-500/10 transition-all shadow-inner">1</div>
+                <h3 class="font-bold text-lg group-hover:text-medical-400 transition-colors relative z-10">First Year</h3>
+            </a>
 
-        <!-- Fourth Year -->
-        <a href="4th/index.html" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-orange-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-orange-500 group-hover:bg-orange-500/10 transition-colors">4</div>
-            <h3 class="font-bold text-lg group-hover:text-orange-400 transition-colors">Fourth Year</h3>
-        </a>
+            <!-- Second Year -->
+            <a href="2nd/index.html" class="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-purple-500 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 flex flex-col items-center text-center gap-4 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 group-hover:border-purple-500/50 flex items-center justify-center text-2xl font-black text-slate-500 group-hover:text-purple-400 group-hover:bg-purple-500/10 transition-all shadow-inner">2</div>
+                <h3 class="font-bold text-lg group-hover:text-purple-400 transition-colors relative z-10">Second Year</h3>
+            </a>
 
-        <!-- Fifth Year -->
-        <a href="5th/index.html" class="group bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-red-500 rounded-xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col items-center gap-3 text-center">
-            <div class="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-xl font-black text-slate-500 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors">5</div>
-            <h3 class="font-bold text-lg group-hover:text-red-400 transition-colors">Fifth Year</h3>
-        </a>
+            <!-- Third Year -->
+            <a href="3rd/index.html" class="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-green-500 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-green-500/10 flex flex-col items-center text-center gap-4 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 group-hover:border-green-500/50 flex items-center justify-center text-2xl font-black text-slate-500 group-hover:text-green-400 group-hover:bg-green-500/10 transition-all shadow-inner">3</div>
+                <h3 class="font-bold text-lg group-hover:text-green-400 transition-colors relative z-10">Third Year</h3>
+            </a>
+
+            <!-- Fourth Year -->
+            <a href="4th/index.html" class="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-orange-500 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-orange-500/10 flex flex-col items-center text-center gap-4 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 group-hover:border-orange-500/50 flex items-center justify-center text-2xl font-black text-slate-500 group-hover:text-orange-400 group-hover:bg-orange-500/10 transition-all shadow-inner">4</div>
+                <h3 class="font-bold text-lg group-hover:text-orange-400 transition-colors relative z-10">Fourth Year</h3>
+            </a>
+
+            <!-- Fifth Year -->
+            <a href="5th/index.html" class="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-red-500 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/10 flex flex-col items-center text-center gap-4 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 group-hover:border-red-500/50 flex items-center justify-center text-2xl font-black text-slate-500 group-hover:text-red-400 group-hover:bg-red-500/10 transition-all shadow-inner">5</div>
+                <h3 class="font-bold text-lg group-hover:text-red-400 transition-colors relative z-10">Fifth Year</h3>
+            </a>
+        </div>
+
     </div>
-
-    <a href="../" class="mt-12 text-slate-400 hover:text-white flex items-center gap-2 transition-colors">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        <span>Back to Schools</span>
-    </a>
 
     <script>
         lucide.createIcons();
