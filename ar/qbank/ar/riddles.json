@@ -1,0 +1,12 @@
+[
+  {"id": "riddles_ar_001", "q": "له أسنان ولكنه لا يعض، ما هو؟", "correct": "المشط", "difficulty": 1},
+  {"id": "riddles_ar_002", "q": "شيء يجري ولا يمشي، له لسان ولا يتكلم، وله سرير ولا ينام، ما هو؟", "correct": "النهر", "difficulty": 2},
+  {"id": "riddles_ar_003", "q": "شيء كلما أخذت منه كبر، ما هو؟", "correct": "الحفرة", "difficulty": 1},
+  {"id": "riddles_ar_004", "q": "ما هو الشيء الذي يكتب ولا يقرأ؟", "correct": "القلم", "difficulty": 1},
+  {"id": "riddles_ar_005", "q": "شيء له رقبة وليس له رأس، ما هو؟", "correct": "الزجاجة", "difficulty": 1},
+  {"id": "riddles_ar_006", "q": "ابن الماء، وإذا وضع في الماء مات، فما هو؟", "correct": "الثلج", "difficulty": 2},
+  {"id": "riddles_ar_007", "q": "كلي ثقوب ومع ذلك أحفظ الماء، فمن أكون؟", "correct": "الإسفنج", "difficulty": 1},
+  {"id": "riddles_ar_008", "q": "شيء تذبحه وتبكي عليه، ما هو؟", "correct": "البصل", "difficulty": 1},
+  {"id": "riddles_ar_009", "q": "ما هو الشيء الذي ينبض بلا قلب؟", "correct": "الساعة", "difficulty": 2},
+  {"id": "riddles_ar_010", "q": "شيء لك، ولكن الناس يستخدمونه أكثر منك، ما هو؟", "correct": "اسمك", "difficulty": 1}
+]

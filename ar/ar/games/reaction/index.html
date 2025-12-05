@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سرعة رد الفعل</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="game-header">
+        <div class="header-content">
+            <a href="../index.html" class="back-btn">
+                <i data-lucide="arrow-right"></i>
+            </a>
+            <h1 class="game-title">
+                <i data-lucide="zap" class="icon-red"></i>
+                <span>سرعة رد الفعل</span>
+            </h1>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <!-- Game Area -->
+        <div id="click-area" class="state-start">
+            <div class="content">
+                <i id="status-icon" data-lucide="play"></i>
+                <h2 id="status-text">اضغط للبدء</h2>
+                <p id="sub-text">اضغط في أي مكان على الشاشة</p>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="result-screen" class="hidden">
+            <div class="result-content">
+                <div class="current-score-box">
+                    <i data-lucide="clock" class="result-icon"></i>
+                    <div class="score-value" id="current-time">0 ms</div>
+                    <p class="score-label">وقت الاستجابة</p>
+                </div>
+
+                <div class="best-score-box">
+                    <p class="best-label">أفضل رقم لك</p>
+                    <p class="best-value" id="best-time">--</p>
+                </div>
+
+                <button onclick="resetGame()" class="retry-btn">
+                    <i data-lucide="rotate-ccw"></i>
+                    <span>حاول مجدداً</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
