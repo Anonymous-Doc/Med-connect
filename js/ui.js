@@ -700,8 +700,9 @@ window.reviewMove = function(idx) {
 };
 
 window.closeReviewModal = function() {
-    // 1. If we were reviewing history, RESTORE THE SIDEBAR
+    // 1. If we were reviewing history
     if (window.isReviewingHistory) {
+        // A. Restore Sidebar state
         const sidebar = document.getElementById('sidebar');
         if (sidebar) {
             const isRTL = state.lang === 'ar';
@@ -711,13 +712,33 @@ window.closeReviewModal = function() {
         }
         window.isReviewingHistory = false; // Reset flag
         
-        // Just hide the modal directly
+        // B. CHECK: Is there an active game we should return to?
+        if (state.gameActive && state.currentQuestion) {
+            // Don't close the modal! Instead, switch the content back to the live question.
+            renderQuestionModal(state.currentQuestion);
+            
+            // If the player had already answered the live question before clicking history, 
+            // we need to restore the "Result View" (Green/Red buttons)
+            if (state.currentResult) {
+                const isCorrect = state.currentResult === 'correct';
+                updateAnswerUI(state.currentSelection, state.currentQuestion, isCorrect);
+            }
+            
+            // Ensure interactive buttons are visible again
+            const flagBtn = document.getElementById('flag-btn');
+            if(flagBtn) flagBtn.classList.remove('hidden');
+            const reportBtn = document.getElementById('report-btn');
+            if(reportBtn) reportBtn.classList.remove('hidden');
+            
+            return; // Exit here, keeping the modal OPEN with game content
+        }
+
+        // C. If no game is active (e.g. reviewing after game over), THEN hide the modal
         const modal = document.getElementById('question-modal');
         const card = document.getElementById('question-card');
         if(card) card.classList.add('scale-95');
         setTimeout(() => {
             if(modal) modal.classList.add('hidden');
-            // Restore buttons for next time
             const flagBtn = document.getElementById('flag-btn');
             if(flagBtn) flagBtn.classList.remove('hidden');
             const reportBtn = document.getElementById('report-btn');
@@ -726,29 +747,19 @@ window.closeReviewModal = function() {
         return;
     }
 
-    // 2. Standard Game Behavior (Closing mid-game)
-    if(state.gameActive && state.currentQuestion) {
-            renderQuestionModal(state.currentQuestion);
-            const flagBtn = document.getElementById('flag-btn');
-            if(flagBtn) flagBtn.classList.remove('hidden');
-            const reportBtn = document.getElementById('report-btn');
-            if(reportBtn) reportBtn.classList.remove('hidden');
-            if(state.currentResult) {
-                const isCorrect = state.currentResult === 'correct';
-                updateAnswerUI(state.currentSelection, state.currentQuestion, isCorrect);
-            }
-    } else {
-        const card = document.getElementById('question-card');
-        if(card) card.classList.add('scale-95');
-        setTimeout(() => {
-            const modal = document.getElementById('question-modal');
-            if(modal) modal.classList.add('hidden');
-            const flagBtn = document.getElementById('flag-btn');
-            if(flagBtn) flagBtn.classList.remove('hidden');
-            const reportBtn = document.getElementById('report-btn');
-            if(reportBtn) reportBtn.classList.remove('hidden');
-        }, 200);
-    }
+    // 2. Standard Behavior (Closing the modal normally, e.g. clicking X during a game)
+    // Usually we don't allow closing the modal mid-game unless it's to go back to menu, 
+    // but if you have logic for that, keep it standard:
+    const card = document.getElementById('question-card');
+    if(card) card.classList.add('scale-95');
+    setTimeout(() => {
+        const modal = document.getElementById('question-modal');
+        if(modal) modal.classList.add('hidden');
+        const flagBtn = document.getElementById('flag-btn');
+        if(flagBtn) flagBtn.classList.remove('hidden');
+        const reportBtn = document.getElementById('report-btn');
+        if(reportBtn) reportBtn.classList.remove('hidden');
+    }, 200);
 };
 
 // Review History Implementation
