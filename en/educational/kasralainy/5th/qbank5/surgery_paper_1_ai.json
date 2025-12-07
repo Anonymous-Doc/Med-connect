@@ -333,7 +333,7 @@
 
 {"id": "surgery_08626", "q": "Which of the following is NOT a component of wound healing?", "options": ["Wound contraction", "Granulation tissue formation", "Epithelialization", "Angiogenesis alone"], "correct": 3, "difficulty": 2},
 {"id": "surgery_08627", "q": "Wound contraction is primarily mediated by:", "options": ["Fibroblasts", "Myofibroblasts containing actin", "Epithelial cells", "Endothelial cells"], "correct": 1, "difficulty": 1},
-{"id": "surgery_08628", "q": "The haemostasis and inflammation phase of wound healing normally lasts:", "options": ["2-3 days", "About 5 days", "1-2 weeks", "3-4 weeks"], "correct": 1, "difficulty": 1},
+{"id": "surgery_08628", "q": "The haemostasis and inflammation phase of wound healing normally lasts:", "options": ["2-3 days", "About 5 days", "1-2 weeks", "3-4 weeks"], "correct": 0, "difficulty": 1},
 {"id": "surgery_08629", "q": "Which cells are most important for phagocytosis and wound debridement in the inflammatory phase?", "options": ["Platelets", "Neutrophils", "Macrophagess", "Lymphocytes"], "correct": 2, "difficulty": 1},
 {"id": "surgery_08630", "q": "During the proliferation phase, granulation tissue is formed by:", "options": ["Fibroblasts only", "Endothelial cells only", "Fibroblasts and new capillary buds together", "Epithelial cells and fibroblasts"], "correct": 2, "difficulty": 1},
 {"id": "surgery_08631", "q": "Young epithelium differs from normal epithelium by being:", "options": ["Thicker with more glands", "Thinner with no sebaceous glands, sweat glands, or hair follicles", "The same thickness but different color", "Thicker but with fewer nerve endings"], "correct": 1, "difficulty": 2},
