@@ -11,10 +11,8 @@ window.initGameSetup = async function() {
     }
 
     // CRITICAL: Guard clause. If this page doesn't have the setup modal, it's likely a menu page.
-    // Stop initialization to prevent errors/freezing.
     const setupModal = document.getElementById('setup-modal');
     if (!setupModal) {
-        // Just initialize icons if needed and exit
         if((window).lucide) lucide.createIcons();
         return;
     }
@@ -36,20 +34,10 @@ window.initGameSetup = async function() {
         reviewBtn.classList.add('max-h-12', 'opacity-100');
     }
     
-    // Topic Container Selection - Robust Method
+    // Topic Container Selection
     let topicContainer = document.getElementById('topic-grid');
-    if (!topicContainer) {
-        // Fallback: find label with data-i18n="topic" and get the next div
-        const labels = Array.from(document.querySelectorAll('#setup-modal label'));
-        const topicLabel = labels.find(l => l.getAttribute('data-i18n') === 'topic');
-        if (topicLabel) {
-            topicContainer = topicLabel.nextElementSibling;
-            // Ensure it's a grid container before using
-            if (!topicContainer.classList.contains('grid')) topicContainer = null;
-        }
-    }
 
-    // Initialize Selected Topics - Logic Changed: Do NOT auto-select all topics
+    // Initialize Selected Topics
     if (!state.selectedTopics) {
         state.selectedTopics = [];
     }
@@ -60,19 +48,15 @@ window.initGameSetup = async function() {
         // Dynamically add or show buttons
         if (topicContainer) {
             available.forEach(t => {
-                // Check if button exists in HTML
                 let btn = document.getElementById(`btn-topic-${t}`);
                 
                 if (!btn && TOPIC_META[t]) {
-                    // Create button if it doesn't exist
                     const meta = TOPIC_META[t];
                     const label = state.lang === 'ar' ? meta.labelAr : meta.label;
                     const descKey = `desc_${t}`;
-                    // Positioning class based on language
                     const posClass = state.lang === 'ar' ? 'left-1' : 'right-1';
 
                     btn = document.createElement('button');
-                    // UPDATED CLASS: Larger padding, rounded corners, gap, group, relative
                     btn.className = "specialty-btn group relative py-4 px-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 shadow-sm hover:shadow-md";
                     btn.onclick = () => selectSpecialty(t);
                     btn.dataset.type = t;
@@ -85,7 +69,6 @@ window.initGameSetup = async function() {
                     if(t === 'arabic') iconName = 'languages';
                     if(t.startsWith('surgery')) iconName = 'scissors';
                     
-                    // UPDATED INNER HTML: Includes Info Icon
                     btn.innerHTML = `
                         <div onclick="showInfo(event, '${descKey}')" class="absolute top-1 ${posClass} p-1 rounded-full hover:bg-white/20 text-slate-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-help">
                             <i data-lucide="info" class="w-3 h-3"></i>
@@ -107,18 +90,7 @@ window.initGameSetup = async function() {
 
     const soloBtn = document.querySelector('button[data-mode="solo"]');
     
-    // Adjust grid layout for mode buttons
-    const modeGrid = document.querySelector('#setup-modal .grid:not(#topic-grid)'); 
-    if(modeGrid) {
-        if (document.querySelector('button[data-mode="points"]')) {
-             // If points mode exists, we have 4 buttons. 
-             // Ensure grid can handle them. On mobile 2 cols, PC 4 cols handled by HTML classes.
-        } else {
-             // If fewer buttons, layout handles itself
-        }
-    }
-    
-    // Persist Game Settings or Set Defaults if first time
+    // Set default mode
     if (!state.gameMode) {
         if (state.category === 'general') {
             state.gameMode = 'millionaire';
@@ -128,7 +100,6 @@ window.initGameSetup = async function() {
             if(soloBtn) soloBtn.classList.remove('hidden');
         }
     } else {
-        // Ensure buttons are visible correctly for re-play
         if (state.category === 'general') {
              if(soloBtn) soloBtn.classList.add('hidden');
         } else {
@@ -138,23 +109,23 @@ window.initGameSetup = async function() {
 
     if (!state.activePlayersCount) state.activePlayersCount = 2;
     if (!state.activeColCount) state.activeColCount = 10;
-    if (!state.questionLimit) state.questionLimit = 9999;
+    if (!state.battleRows) state.battleRows = 3; // Default rows for Battle
+    if (!state.questionLimit) state.questionLimit = 999;
 
     // Apply visual selections based on state
     selectGameMode(state.gameMode);
     selectPlayerCount(state.activePlayersCount);
     selectGridWidth(state.activeColCount);
-    selectQuestionLimit(state.questionLimit);
+    // Note: selectQuestionLimit/selectBattleRows is handled inside selectGameMode now
     
-    // SIDEBAR INITIALIZATION - OVERLAY MODE
-    state.isSidebarOpen = false; // Always closed by default for cleaner UI
+    // SIDEBAR INITIALIZATION
+    state.isSidebarOpen = false;
     const sb = document.getElementById('sidebar');
     const main = document.getElementById('main-content');
     const isRTL = state.lang === 'ar';
     const activeClass = isRTL ? 'translate-x-full' : '-translate-x-full';
 
     if (sb) {
-        // Set correct side based on direction
         if (isRTL) {
             sb.classList.remove('left-0');
             sb.classList.add('right-0');
@@ -162,11 +133,7 @@ window.initGameSetup = async function() {
             sb.classList.remove('right-0');
             sb.classList.add('left-0');
         }
-
-        // Force closed state initially
         sb.classList.add(activeClass);
-        
-        // Ensure full width by removing any margin classes that might cause shifting
         if(main) {
             main.classList.remove('mr-64', 'ml-64', 'md:mr-64', 'md:ml-64', 'mr-56', 'ml-56'); 
             main.classList.add('mr-0', 'ml-0');
@@ -178,7 +145,7 @@ window.initGameSetup = async function() {
     }
 };
 
-// New function to update UI classes for buttons
+// Update UI classes for topic buttons
 window.updateTopicButtonsUI = function() {
     document.querySelectorAll('.specialty-btn').forEach(btn => {
         const type = btn.dataset.type;
@@ -199,7 +166,9 @@ window.updateTopicButtonsUI = function() {
     const errorMsg = document.getElementById('topic-error');
     if(errorMsg) {
         if(state.selectedTopics.length === 0) {
-            errorMsg.classList.remove('hidden');
+            errorMsg.innerText = state.lang === 'ar' ? "يرجى اختيار موضوع واحد على الأقل" : "Please select at least one topic.";
+            errorMsg.classList.remove('hidden', 'text-orange-500');
+            errorMsg.classList.add('text-red-500');
         } else {
             errorMsg.classList.add('hidden');
         }
@@ -226,13 +195,14 @@ window.selectGameMode = function(mode) {
     
     const strategyOpts = document.getElementById('strategy-options');
     const limitOpts = document.getElementById('question-limit-options');
+    const limitLabel = limitOpts ? limitOpts.querySelector('label') : null;
     const startBtnText = document.getElementById('start-btn-text');
     const progressContainer = document.getElementById('bank-progress-container');
     const limitBtns = document.querySelectorAll('.limit-btn');
     
     const toggle = (el, show) => { if(el) show ? el.classList.remove('hidden') : el.classList.add('hidden'); };
 
-    // Helper to manage children visibility safely
+    // Update strategy options visibility
     const updateStrategyChildren = (showTeams, showGrid) => {
         if (strategyOpts && strategyOpts.children.length >= 2) {
             strategyOpts.children[0].classList.toggle('hidden', !showTeams);
@@ -240,28 +210,36 @@ window.selectGameMode = function(mode) {
         }
     };
 
+    // If switching TO Points mode, enforce limit of 6 topics
+    if (mode === 'points' && state.selectedTopics.length > 6) {
+        state.selectedTopics = state.selectedTopics.slice(0, 6);
+        updateTopicButtonsUI();
+    }
+
     if(mode === 'strategy') {
         toggle(strategyOpts, true);
         updateStrategyChildren(true, true);
         toggle(limitOpts, false);
         toggle(progressContainer, false);
         if(startBtnText) startBtnText.innerText = getText('startGame');
-} else if (mode === 'solo') {
+
+    } else if (mode === 'solo') {
         toggle(strategyOpts, false);
         toggle(limitOpts, true);
+        if(limitLabel) limitLabel.innerText = state.lang === 'ar' ? 'الأسئلة' : 'QUESTIONS';
         
         if(limitBtns.length >= 4) {
-            // Button 1: Infinity - Add 'text-2xl', remove 'text-sm'
+            // Button 1: Infinity
             limitBtns[0].innerText = "∞"; 
             limitBtns[0].dataset.limit = "999"; 
-            limitBtns[0].classList.add('text-2xl');       // Make it big
-            limitBtns[0].classList.remove('text-sm', 'md:text-base'); // Remove small font classes
+            limitBtns[0].classList.add('text-2xl');
+            limitBtns[0].classList.remove('text-sm', 'md:text-base');
             limitBtns[0].onclick = () => selectQuestionLimit(999);
 
-            // Button 2: 10 - Standard size
+            // Button 2: 10
             limitBtns[1].innerText = "10"; 
             limitBtns[1].dataset.limit = "10"; 
-            limitBtns[1].classList.remove('text-2xl');    // Ensure it's not big
+            limitBtns[1].classList.remove('text-2xl');
             limitBtns[1].classList.add('text-sm', 'md:text-base');
             limitBtns[1].onclick = () => selectQuestionLimit(10);
 
@@ -278,9 +256,9 @@ window.selectGameMode = function(mode) {
             limitBtns[3].classList.remove('text-2xl');
             limitBtns[3].classList.add('text-sm', 'md:text-base');
             limitBtns[3].onclick = () => selectQuestionLimit(100);
+            limitBtns[3].classList.remove('hidden');
         }
         
-        // Select default (Infinity) if not set
         if (!state.questionLimit) selectQuestionLimit(999);
         else selectQuestionLimit(state.questionLimit);
 
@@ -293,31 +271,41 @@ window.selectGameMode = function(mode) {
         toggle(limitOpts, false);
         toggle(progressContainer, false);
         if(startBtnText) startBtnText.innerText = getText('beginRes');
+
     } else if (mode === 'points') {
         if (strategyOpts && limitOpts && strategyOpts.parentNode) {
             strategyOpts.parentNode.insertBefore(strategyOpts, limitOpts);
         }
 
         toggle(strategyOpts, true);
-        updateStrategyChildren(true, false);
+        updateStrategyChildren(true, false); // Show Teams, Hide Connect4 Grid
         toggle(limitOpts, true);
         toggle(progressContainer, false);
         
-        // FIX: Explicitly update dataset.limit for Points mode too
+        // --- NEW ROWS LOGIC ---
+        if(limitLabel) limitLabel.innerText = state.lang === 'ar' ? 'عدد الصفوف' : 'ROWS';
+        
         if(limitBtns.length >= 3) {
-            limitBtns[0].innerText = "30"; 
-            limitBtns[0].dataset.limit = "30";
-            limitBtns[0].onclick = () => selectQuestionLimit(30);
+            // Rows Options: 3, 6, 9
+            limitBtns[0].innerText = "3"; 
+            limitBtns[0].classList.remove('text-2xl');
+            limitBtns[0].classList.add('text-sm', 'md:text-base');
+            limitBtns[0].onclick = () => selectBattleRows(3);
             
-            limitBtns[1].innerText = "60"; 
-            limitBtns[1].dataset.limit = "60";
-            limitBtns[1].onclick = () => selectQuestionLimit(60);
+            limitBtns[1].innerText = "6"; 
+            limitBtns[1].classList.remove('text-2xl');
+            limitBtns[1].classList.add('text-sm', 'md:text-base');
+            limitBtns[1].onclick = () => selectBattleRows(6);
             
-            limitBtns[2].innerText = "120"; 
-            limitBtns[2].dataset.limit = "120";
-            limitBtns[2].onclick = () => selectQuestionLimit(120);
+            limitBtns[2].innerText = "9"; 
+            limitBtns[2].classList.remove('text-2xl');
+            limitBtns[2].classList.add('text-sm', 'md:text-base');
+            limitBtns[2].onclick = () => selectBattleRows(9);
+            
+            // Hide 4th button
+            if(limitBtns[3]) limitBtns[3].classList.add('hidden');
         }
-        selectQuestionLimit(30);
+        selectBattleRows(state.battleRows || 3);
 
         if(startBtnText) startBtnText.innerText = getText('beginBattle');
     }
@@ -325,6 +313,19 @@ window.selectGameMode = function(mode) {
 
 window.selectSpecialty = function(type) {
     const index = state.selectedTopics.indexOf(type);
+    
+    // Points Battle Logic: Max 6 Topics
+    if (state.gameMode === 'points' && index === -1 && state.selectedTopics.length >= 6) {
+        const errorMsg = document.getElementById('topic-error');
+        if(errorMsg) {
+            errorMsg.innerText = state.lang === 'ar' ? "الحد الأقصى ٦ مواضيع في وضع المعركة" : "Max 6 topics in Points Battle";
+            errorMsg.classList.remove('hidden', 'text-red-500');
+            errorMsg.classList.add('text-orange-500');
+            setTimeout(() => errorMsg.classList.add('hidden'), 3000);
+        }
+        return;
+    }
+
     if (index > -1) {
         state.selectedTopics.splice(index, 1);
     } else {
@@ -376,15 +377,32 @@ window.updateBankStats = async function() {
 window.selectQuestionLimit = function(limit) {
     state.questionLimit = parseInt(limit);
     document.querySelectorAll('.limit-btn').forEach(btn => {
-        // Safe check using dataset
-        const btnLimit = parseInt(btn.dataset.limit);
-        
-        if(btnLimit === state.questionLimit) {
-            btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
-            btn.classList.remove('border-slate-200', 'dark:border-slate-600');
-        } else {
-            btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent');
-            btn.classList.add('border-slate-200', 'dark:border-slate-600');
+        // Only run this check if we are in Solo mode (Points mode uses Rows)
+        if (state.gameMode === 'solo') {
+            const btnLimit = parseInt(btn.dataset.limit);
+            if(btnLimit === state.questionLimit) {
+                btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
+                btn.classList.remove('border-slate-200', 'dark:border-slate-600');
+            } else {
+                btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent');
+                btn.classList.add('border-slate-200', 'dark:border-slate-600');
+            }
+        }
+    });
+};
+
+window.selectBattleRows = function(rows) {
+    state.battleRows = rows;
+    document.querySelectorAll('.limit-btn').forEach(btn => {
+        // Only run if we are in Points mode
+        if (state.gameMode === 'points') {
+            if(btn.innerText === rows.toString()) {
+                btn.classList.add('bg-medical-600', 'text-white', 'border-transparent');
+                btn.classList.remove('border-slate-200', 'dark:border-slate-600');
+            } else {
+                btn.classList.remove('bg-medical-600', 'text-white', 'border-transparent');
+                btn.classList.add('border-slate-200', 'dark:border-slate-600');
+            }
         }
     });
 };
@@ -421,8 +439,51 @@ window.startGame = async function() {
         return;
     }
 
+    // --- POINTS BATTLE LOGIC ---
+    if (state.gameMode === 'points') {
+        const setupModal = document.getElementById('setup-modal');
+        if(setupModal) setupModal.classList.add('hidden');
+        
+        // Reset Battle State
+        state.battleGrid = {}; 
+        state.activeBattleQuestions = {}; 
+        state.solvedBattleIds = [];
+        
+        // Prepare grid questions per topic
+        for (const topic of state.selectedTopics) {
+            const questions = await loadQuestionBank(topic);
+            
+            // Filter by difficulty and shuffle
+            const easy = questions.filter(q => parseInt(q.difficulty) === 1).sort(() => Math.random() - 0.5);
+            const med = questions.filter(q => parseInt(q.difficulty) === 2).sort(() => Math.random() - 0.5);
+            const hard = questions.filter(q => parseInt(q.difficulty) === 3).sort(() => Math.random() - 0.5);
+            
+            state.battleGrid[topic] = { easy, med, hard };
+        }
+        
+        // Initialize Player Scores
+        state.currentPlayerIndex = 0;
+        state.playerScores = {};
+        for(let i=1; i<=state.activePlayersCount; i++) {
+            state.playerScores[i] = 0;
+        }
+        
+        state.isStealMode = false;
+        state.stealingPlayerIndex = -1;
+        state.gameActive = true;
+        
+        // Clean up other UIs
+        ['strategy-ui', 'solo-ui', 'millionaire-ui'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
+        });
+
+        initPointsBattle();
+        return;
+    }
+
+    // --- OTHER MODES LOGIC (Solo, Strategy, Millionaire) ---
     let db = [];
-    
     for (const topic of state.selectedTopics) {
         const questions = await loadQuestionBank(topic);
         db = db.concat(questions);
@@ -452,7 +513,7 @@ window.startGame = async function() {
     const histCont = document.getElementById('history-container');
     if(histCont) histCont.innerHTML = '';
 
-    // Reset UIs safely
+    // Reset UIs
     const els = ['strategy-ui', 'solo-ui', 'millionaire-ui', 'points-battle-ui'];
     els.forEach(id => {
         const el = document.getElementById(id);
@@ -501,24 +562,6 @@ window.startGame = async function() {
         renderLadder();
         updateMillionaireDisplay();
     }
-    else if (state.gameMode === 'points') {
-        // Points Battle Setup
-        state.currentPlayerIndex = 0;
-        state.playerScores = {};
-        for(let i=1; i<=state.activePlayersCount; i++) {
-            state.playerScores[i] = 0;
-        }
-        
-        state.pointsBattleRemaining = state.questionLimit;
-        state.pointsBattleTotalQ = state.questionLimit;
-        state.isStealMode = false;
-        state.stealingPlayerIndex = -1;
-        
-        // We store the full DB in queue to sample from later
-        state.questionQueue = db; 
-        
-        initPointsBattle();
-    }
     else {
         // Strategy
         state.questionQueue = db.sort(() => Math.random() - 0.5);
@@ -538,19 +581,16 @@ window.startGame = async function() {
 };
 
 window.showQuestion = function() {
-    // 1. CRITICAL FIX: Stop if limit reached (999 is Infinity)
-    if (state.gameMode === 'solo' && state.questionLimit !== 9999 && state.soloTotal >= state.questionLimit) {
+    if (state.gameMode === 'solo' && state.questionLimit !== 999 && state.soloTotal >= state.questionLimit) {
         showSoloSummary();
         return;
     }
 
-    // 2. Stop if queue is empty
     if(state.questionQueue.length === 0 && state.gameMode !== 'points') {
         if (state.gameMode === 'solo') showSoloSummary();
         return;
     }
     
-    // Strategy difficulty logic
     if (state.gameMode === 'strategy' && state.targetDifficulty) {
         const idx = state.questionQueue.findIndex(q => parseInt(q.difficulty || 1) === state.targetDifficulty);
         if (idx !== -1) {
@@ -562,7 +602,6 @@ window.showQuestion = function() {
         }
     }
 
-    // Standard show logic
     if (state.gameMode !== 'points') {
         const q = state.questionQueue.shift();
         state.currentQuestion = q;
@@ -593,7 +632,6 @@ window.submitAnswer = function(idx, question) {
         handlePointsBattleAnswer(isCorrect);
     }
     
-    // Determine player for history
     let playerForHistory = {name: 'Solo', textClass: 'text-slate-500'};
     if (state.gameMode === 'strategy') playerForHistory = PLAYERS_CONFIG[state.currentPlayerIndex];
     else if (state.gameMode === 'points') {
@@ -616,38 +654,86 @@ window.submitTypedAnswer = function(question) {
     
     const isCorrect = normUser === normCorrect || normUser.includes(normCorrect) || normCorrect.includes(normUser);
     
-    state.currentResult = isCorrect ? 'correct' : 'wrong';
-    state.currentSelection = val;
+    if (isCorrect) {
+        state.currentResult = 'correct';
+        state.currentSelection = val;
 
-    if (state.gameMode === 'solo') {
-        state.soloTotal++;
-        if(isCorrect) {
-             state.soloScore++;
-             markQuestionSolved(question.id);
-        } else {
-             saveMistake(question, val, 'riddles');
+        if (state.gameMode === 'solo') {
+            state.soloTotal++;
+            state.soloScore++;
+            markQuestionSolved(question.id);
+        } else if (state.gameMode === 'points') {
+            handlePointsBattleAnswer(true);
         }
-    } else if (state.gameMode === 'points') {
-        handlePointsBattleAnswer(isCorrect);
+
+        let playerForHistory = {name: 'Solo', textClass: 'text-slate-500'};
+        if (state.gameMode === 'points') {
+            const pIdx = state.isStealMode ? state.stealingPlayerIndex : state.currentPlayerIndex;
+            playerForHistory = PLAYERS_CONFIG[pIdx];
+        }
+
+        addToHistory(playerForHistory, question, val, true);
+        updateAnswerUI(val, question, true);
+        
+    } else {
+        // Just shake input
+        if(input) {
+            input.classList.add('ring-4', 'ring-red-500/50', 'animate-pulse', 'border-red-500');
+            setTimeout(() => {
+                input.classList.remove('ring-4', 'ring-red-500/50', 'animate-pulse', 'border-red-500');
+                input.focus();
+            }, 500);
+        }
     }
-
-    let playerForHistory = {name: 'Solo', textClass: 'text-slate-500'};
-    if (state.gameMode === 'points') {
-        const pIdx = state.isStealMode ? state.stealingPlayerIndex : state.currentPlayerIndex;
-        playerForHistory = PLAYERS_CONFIG[pIdx];
-    }
-
-    addToHistory(
-        playerForHistory,
-        question,
-        val,
-        isCorrect
-    );
-
-    updateAnswerUI(val, question, isCorrect);
 };
 
-// Auto-initialize on load to ensure dynamic content is generated
+window.claimManualCorrect = function() {
+    if (state.gameMode === 'solo') {
+        state.soloScore++;
+        if(state.currentQuestion) markQuestionSolved(state.currentQuestion.id);
+        document.getElementById('live-score-text').innerText = state.soloScore;
+        const acc = state.soloTotal > 0 ? Math.round((state.soloScore / state.soloTotal) * 100) : 100;
+        document.getElementById('live-accuracy-text').innerText = `${acc}%`;
+    } else if (state.gameMode === 'points') {
+        // If it was a steal attempt, we need to revert the penalty AND award points
+        // OR simply add the points + the penalty back? 
+        // Simplest: Just add the points (as if they got it right).
+        // BUT wait, we deducted points in handlePointsBattleAnswer(false).
+        // So we need to add: (Points Value) + (Points Value if StealMode)
+        
+        const pIdx = state.isStealMode ? state.stealingPlayerIndex : state.currentPlayerIndex;
+        const pId = PLAYERS_CONFIG[pIdx].id;
+        
+        let adjustment = state.currentDifficultyValue;
+        if (state.isStealMode) {
+            // We subtracted it before, so add it back (to reach 0 change) + add it again (for correct answer)
+            adjustment = state.currentDifficultyValue * 2;
+        }
+        
+        state.playerScores[pId] = (state.playerScores[pId] || 0) + adjustment;
+        if(window.renderBattleScoreboard) window.renderBattleScoreboard();
+    }
+
+    if (state.history.length > 0) {
+        const lastEntry = state.history[state.history.length - 1];
+        lastEntry.correct = true;
+        const historyList = document.getElementById('history-container');
+        if(historyList && historyList.firstChild) {
+            historyList.firstChild.classList.remove('border-red-500');
+            historyList.firstChild.classList.add('border-green-500');
+            const badge = historyList.firstChild.querySelector('.bg-red-100');
+            if(badge) {
+                badge.className = "px-1 py-0 rounded text-[8px] font-bold bg-green-100 text-green-700";
+                badge.innerText = getText('goodJob');
+            }
+        }
+    }
+    
+    state.currentResult = 'correct';
+    updateAnswerUI("(Overridden)", state.currentQuestion, true);
+};
+
+// Auto-initialize
 document.addEventListener('DOMContentLoaded', () => {
     if (window.initGameSetup) window.initGameSetup();
 });

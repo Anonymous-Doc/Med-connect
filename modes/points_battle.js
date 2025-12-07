@@ -1,62 +1,194 @@
-
 function initPointsBattle() {
     const mainContent = document.getElementById('main-content');
     
-    // Check if Points Battle UI already exists, if not create it
+    // Explicitly clear any lingering question state so the app knows we are on the Grid
+    state.currentQuestion = null;
+    state.currentResult = null;
+
     let battleUI = document.getElementById('points-battle-ui');
     if (!battleUI) {
         battleUI = document.createElement('div');
         battleUI.id = 'points-battle-ui';
-        battleUI.className = 'w-full flex flex-col items-center gap-3 h-full justify-center animate-fade-in hidden p-2';
+        battleUI.className = 'w-full flex flex-col items-center gap-4 h-full justify-start animate-fade-in hidden p-4 overflow-hidden';
         
-        // Scoreboard container reuse logic
+        // 1. Scoreboard (Top)
         const scoreboard = document.createElement('div');
         scoreboard.id = 'battle-scoreboard';
-        scoreboard.className = 'w-full max-w-4xl flex justify-center gap-1.5 px-1 overflow-x-auto no-scrollbar py-4 min-h-[70px] shrink-0';
+        scoreboard.className = 'w-full max-w-5xl flex justify-center gap-2 px-1 py-2 min-h-[80px] shrink-0';
         
-        const buttonsContainer = document.createElement('div');
-        buttonsContainer.className = 'flex flex-col gap-4 w-full max-w-sm';
-        
-        // Difficulty Buttons
-        const easyBtn = createDiffBtn('easy', 'green', 100);
-        const medBtn = createDiffBtn('med', 'yellow', 150);
-        const hardBtn = createDiffBtn('hard', 'red', 200);
-        
-        buttonsContainer.appendChild(easyBtn);
-        buttonsContainer.appendChild(medBtn);
-        buttonsContainer.appendChild(hardBtn);
-
-        const infoText = document.createElement('p');
-        infoText.id = 'battle-info';
-        infoText.className = "text-[10px] font-bold text-slate-400 mt-4 text-center";
+        // 2. The Grid Container (Scrollable if needed)
+        const gridContainer = document.createElement('div');
+        gridContainer.id = 'battle-grid-container';
+        gridContainer.className = 'w-full max-w-6xl flex-1 overflow-auto custom-scrollbar bg-slate-800/50 rounded-2xl p-4 border border-slate-700 shadow-inner relative';
         
         battleUI.appendChild(scoreboard);
-        battleUI.appendChild(buttonsContainer);
-        battleUI.appendChild(infoText);
+        battleUI.appendChild(gridContainer);
         
         mainContent.querySelector('div.flex-1').appendChild(battleUI);
     }
 
-    document.getElementById('points-battle-ui').classList.remove('hidden');
+    const ui = document.getElementById('points-battle-ui');
+    ui.classList.remove('hidden');
+    
     renderBattleScoreboard();
-    updateBattleInfo();
+    renderBattleGrid();
 }
 
-function createDiffBtn(level, color, points) {
-    const btn = document.createElement('button');
-    btn.className = `w-full py-4 rounded-2xl font-black text-lg shadow-lg transform transition-all hover:scale-105 active:scale-95 border-b-4 relative overflow-hidden group bg-${color}-500 border-${color}-700 text-white`;
+function renderBattleGrid() {
+    const container = document.getElementById('battle-grid-container');
+    container.innerHTML = '';
     
-    btn.onclick = () => selectDifficulty(level, points);
+    const topics = state.selectedTopics;
+    const colCount = topics.length;
     
-    const content = `
-        <div class="relative z-10 flex justify-between items-center px-6">
-            <span>${getText('diff' + (level.charAt(0).toUpperCase() + level.slice(1)))}</span>
-            <span class="bg-white/20 px-2 py-1 rounded text-sm backdrop-blur-sm">+${points}</span>
-        </div>
-        <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-    `;
-    btn.innerHTML = content;
-    return btn;
+    // Main Grid Layout
+    const grid = document.createElement('div');
+    grid.className = `grid gap-3 w-full h-full`;
+    // Responsive columns: min 140px per column
+    grid.style.gridTemplateColumns = `repeat(${colCount}, minmax(140px, 1fr))`;
+    grid.style.gridTemplateRows = `auto repeat(${state.battleRows}, 1fr)`; // Header + Rows
+
+    // 1. Render Headers
+    topics.forEach(topic => {
+        const meta = TOPIC_META[topic];
+        const label = state.lang === 'ar' ? meta.labelAr : meta.label;
+        
+        const header = document.createElement('div');
+        header.className = "bg-yellow-400 text-yellow-900 font-black text-center py-3 px-2 rounded-xl shadow-md border-b-4 border-yellow-600 flex items-center justify-center text-xs md:text-sm uppercase tracking-wider h-14";
+        header.innerText = label;
+        grid.appendChild(header);
+    });
+
+    // 2. Render Question Cells based on Rows (3, 6, 9)
+    const rows = state.battleRows; 
+    let pattern = []; 
+    
+    if (rows === 3) pattern = ['easy', 'med', 'hard'];
+    if (rows === 6) pattern = ['easy', 'easy', 'med', 'med', 'hard', 'hard'];
+    if (rows === 9) pattern = ['easy', 'easy', 'easy', 'med', 'med', 'med', 'hard', 'hard', 'hard'];
+
+    // Iterate row by row
+    for (let r = 0; r < rows; r++) {
+        const diffKey = pattern[r];
+        let points = 100;
+        let colorClass = "text-green-600 border-green-200 hover:bg-green-50"; // Easy
+        
+        if (diffKey === 'med') {
+            points = 150;
+            colorClass = "text-blue-600 border-blue-200 hover:bg-blue-50"; // Medium
+        } 
+        if (diffKey === 'hard') {
+            points = 200;
+            colorClass = "text-red-600 border-red-200 hover:bg-red-50"; // Hard
+        }
+
+        topics.forEach(topic => {
+            const bank = state.battleGrid[topic][diffKey];
+            
+            // Calculate index to cycle through questions if multiple rows have same difficulty
+            const typeIndex = pattern.slice(0, r).filter(p => p === diffKey).length;
+            
+            const question = bank[typeIndex % bank.length]; 
+            const uniqueId = `btn-${topic}-${diffKey}-${typeIndex}`;
+            
+            // Determine state (Solved or Active)
+            const isSolved = state.solvedBattleIds.includes(uniqueId);
+
+            const btn = document.createElement('button');
+            
+            if (isSolved) {
+                btn.className = "w-full h-full min-h-[60px] rounded-xl border-2 border-slate-700 bg-slate-800 text-slate-600 font-black text-xl flex items-center justify-center cursor-not-allowed opacity-50";
+                btn.innerText = ""; 
+                btn.disabled = true;
+            } else {
+                btn.className = `w-full h-full min-h-[60px] rounded-xl border-2 font-black text-xl md:text-2xl shadow-sm transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center bg-white ${colorClass}`;
+                btn.innerText = points;
+                btn.onclick = () => selectGridQuestion(question, points, uniqueId);
+            }
+            
+            grid.appendChild(btn);
+        });
+    }
+
+    container.appendChild(grid);
+}
+
+function selectGridQuestion(question, points, uniqueId) {
+    if (state.isStealMode) return; 
+
+    state.currentQuestion = question;
+    state.currentResult = null;
+    state.currentDifficultyValue = points;
+    state.currentBattleId = uniqueId; 
+    state.currentSelection = null;
+    
+    renderQuestionModal(question);
+}
+
+function handlePointsBattleAnswer(isCorrect) {
+    const pIdx = state.isStealMode ? state.stealingPlayerIndex : state.currentPlayerIndex;
+    const pId = PLAYERS_CONFIG[pIdx].id;
+
+    if (isCorrect) {
+        // Award points
+        state.playerScores[pId] = (state.playerScores[pId] || 0) + state.currentDifficultyValue;
+    } else {
+        // Lose points if stealing and wrong
+        if (state.isStealMode) {
+            state.playerScores[pId] = (state.playerScores[pId] || 0) - state.currentDifficultyValue;
+        }
+    }
+}
+
+function initiateSteal() {
+    state.isStealMode = true;
+    state.stealingPlayerIndex = (state.currentPlayerIndex + 1) % state.activePlayersCount;
+    
+    document.getElementById('next-action-container').classList.add('hidden'); 
+    
+    const player = PLAYERS_CONFIG[state.stealingPlayerIndex];
+    const badge = document.getElementById('q-player-badge');
+    badge.innerText = `${player.name} (${getText('stealChance')})`;
+    badge.className = `px-2 py-0.5 rounded-full text-[9px] font-bold ${player.bgLight} ${player.textClass} ring-2 ring-orange-400 animate-pulse`;
+
+    // Re-enable options
+    const opts = document.querySelectorAll('#options-container button');
+    opts.forEach(btn => {
+        if(!btn.classList.contains('border-red-500')) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+            btn.classList.add('hover:border-medical-500', 'hover:bg-medical-50', 'dark:hover:bg-slate-800');
+        }
+    });
+    
+    state.currentResult = null;
+    renderBattleScoreboard();
+}
+
+function finishPointsTurn(pointsAwarded) {
+    // 1. Mark cell as solved
+    if (state.currentBattleId) {
+        state.solvedBattleIds.push(state.currentBattleId);
+    }
+
+    // 2. CRITICAL FIX: Clear currentQuestion so History knows we are back on the Grid
+    state.currentQuestion = null;
+    state.currentResult = null;
+
+    // 3. Update Turn Logic
+    state.isStealMode = false;
+    state.stealingPlayerIndex = -1;
+    state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.activePlayersCount;
+
+    // 4. Refresh UI
+    renderBattleScoreboard();
+    renderBattleGrid();
+    
+    // 5. Check Game Over
+    const totalCells = state.selectedTopics.length * state.battleRows;
+    if (state.solvedBattleIds.length >= totalCells) {
+        endPointsBattle();
+    }
 }
 
 function renderBattleScoreboard() {
@@ -71,145 +203,37 @@ function renderBattleScoreboard() {
         
         const score = state.playerScores[i] || 0;
         
-        let activeClass = 'bg-slate-100 dark:bg-slate-800/50 border-transparent opacity-60 scale-95';
+        let activeClass = 'bg-slate-800 border-slate-700 opacity-60 scale-95 border';
         if (isCurrent && !state.isStealMode) {
-            activeClass = `bg-white dark:bg-slate-800 scale-110 shadow-xl z-10 ${p.ringClass.replace('ring-', 'border-')} border-2`;
+            activeClass = `bg-slate-700 scale-105 shadow-xl z-10 ${p.ringClass.replace('ring-', 'border-')} border-2`;
         } else if (isStealer && state.isStealMode) {
-            activeClass = `bg-white dark:bg-slate-800 scale-110 shadow-xl z-10 border-orange-500 border-2 animate-pulse`;
+            activeClass = `bg-slate-700 scale-105 shadow-xl z-10 border-orange-500 border-2 animate-pulse`;
         }
 
         const card = document.createElement('div');
-        card.className = `flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[70px] ${activeClass}`;
+        card.className = `flex flex-col items-center justify-center p-3 rounded-2xl transition-all min-w-[80px] ${activeClass}`;
         
-        // Badge for stealer
+        // Icon logic
         let statusIcon = '';
         if(isStealer && state.isStealMode) {
-             statusIcon = `<div class="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full p-0.5 shadow-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>`;
+             statusIcon = `<div class="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full p-1 shadow-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>`;
         }
 
         card.innerHTML = `
             <div class="relative">
-                <div class="w-3 h-3 rounded-full mb-1 ${p.colorClass}"></div>
+                <div class="w-4 h-4 rounded-full mb-1 ${p.colorClass} shadow-lg shadow-${p.colorClass}/50"></div>
                 ${statusIcon}
             </div>
-            <span class="text-[10px] font-bold ${p.textClass}">${p.name}</span>
-            <span class="text-xs font-black bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded mt-1 text-slate-700 dark:text-slate-200">${score}</span>
+            <span class="text-[10px] font-bold ${p.textClass} uppercase tracking-wider">${p.name}</span>
+            <span class="text-xl font-black text-white mt-1">${score}</span>
         `;
         sb.appendChild(card);
     }
 }
 
-function updateBattleInfo() {
-    const info = document.getElementById('battle-info');
-    if(info) {
-        info.innerText = `${getText('remainingQ')} ${state.pointsBattleRemaining} / ${state.pointsBattleTotalQ}`;
-    }
-}
-
-function selectDifficulty(level, points) {
-    if (state.isStealMode) return; // Should not happen if UI is blocked correctly
-    
-    // Filter questions
-    let diffLevel = 2; // Medium default
-    if (level === 'easy') diffLevel = 1;
-    if (level === 'hard') diffLevel = 3;
-    
-    // Find available question of this difficulty not yet solved
-    // We check the whole queue. In points mode, questionQueue holds ALL DB questions initially.
-    // Optimization: We should shuffle and find.
-    
-    const availableQs = state.questionQueue.filter(q => parseInt(q.difficulty) === diffLevel);
-    
-    if (availableQs.length === 0) {
-        // Fallback if run out of specific difficulty? Or just pick any.
-        alert("No more questions of this difficulty!");
-        return;
-    }
-    
-    // Pick random
-    const qIndex = Math.floor(Math.random() * availableQs.length);
-    const q = availableQs[qIndex];
-    
-    // Remove from queue (conceptually used)
-    state.questionQueue = state.questionQueue.filter(item => item !== q);
-    
-    state.currentQuestion = q;
-    state.currentResult = null;
-    state.currentDifficultyValue = points;
-    state.currentSelection = null;
-    
-    renderQuestionModal(q);
-}
-
-function handlePointsBattleAnswer(isCorrect) {
-    const pIdx = state.isStealMode ? state.stealingPlayerIndex : state.currentPlayerIndex;
-    const pId = PLAYERS_CONFIG[pIdx].id;
-
-    if (isCorrect) {
-        // Award points
-        state.playerScores[pId] = (state.playerScores[pId] || 0) + state.currentDifficultyValue;
-    }
-    // Logic for next steps (Steal or End Turn) is handled in UI (Next Button actions)
-    // This function just updates data model
-}
-
-function initiateSteal() {
-    state.isStealMode = true;
-    // Determine stealer: simply the next player in rotation
-    state.stealingPlayerIndex = (state.currentPlayerIndex + 1) % state.activePlayersCount;
-    
-    // Re-render modal to show steal status
-    // We need to "reset" the view but keep the question revealed
-    // Actually, we just update the badges and buttons
-    
-    document.getElementById('next-action-container').classList.add('hidden'); // Hide old buttons
-    
-    const player = PLAYERS_CONFIG[state.stealingPlayerIndex];
-    const badge = document.getElementById('q-player-badge');
-    badge.innerText = `${player.name} (${getText('stealChance')})`;
-    badge.className = `px-2 py-0.5 rounded-full text-[9px] font-bold ${player.bgLight} ${player.textClass} ring-2 ring-orange-400 animate-pulse`;
-
-    // Re-enable options for the stealer
-    const opts = document.querySelectorAll('#options-container button');
-    opts.forEach(btn => {
-        if(!btn.classList.contains('border-red-500')) { // Keep the wrong one marked
-            btn.disabled = false;
-            btn.classList.remove('opacity-50');
-            btn.classList.add('hover:border-medical-500', 'hover:bg-medical-50', 'dark:hover:bg-slate-800');
-        }
-    });
-    
-    // Reset result state so new answer can be submitted
-    state.currentResult = null;
-    
-    // Update background score to show who is active
-    renderBattleScoreboard();
-}
-
-function finishPointsTurn(pointsAwarded) {
-    // Decrement question count
-    state.pointsBattleRemaining--;
-    updateBattleInfo();
-
-    // Reset Steal Mode
-    state.isStealMode = false;
-    state.stealingPlayerIndex = -1;
-
-    // Move to next player
-    state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.activePlayersCount;
-
-    renderBattleScoreboard();
-    
-    // Check Game Over
-    if (state.pointsBattleRemaining <= 0) {
-        endPointsBattle();
-    }
-}
-
 function endPointsBattle() {
-    // Find winner
     let winnerId = 1;
-    let maxScore = -1;
+    let maxScore = -99999;
     
     for(let i=1; i<=state.activePlayersCount; i++) {
         if(state.playerScores[i] > maxScore) {
@@ -218,7 +242,7 @@ function endPointsBattle() {
         }
     }
     
-    const winner = PLAYERS_CONFIG[winnerId-1]; // 0-indexed config
+    const winner = PLAYERS_CONFIG[winnerId-1];
     
     document.getElementById('winner-title').innerText = getText('victory');
     document.getElementById('winner-text').innerText = `${winner.name} ${getText('youWin')}`;
