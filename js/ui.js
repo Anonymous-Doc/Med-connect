@@ -591,6 +591,16 @@ window.reviewMove = function(idx) {
 
     window.isReviewingHistory = true;
 
+    // --- FIX START: Backup the live question if a game is active ---
+    // We store the current live question in 'suspendedQuestion' so we don't lose it
+    if (state.gameActive && state.currentQuestion && !state.suspendedQuestion) {
+        // Prevent backing up if we are accidentally reviewing the current question itself
+        if (state.currentQuestion.id !== data.q.id) {
+            state.suspendedQuestion = state.currentQuestion;
+        }
+    }
+    // --- FIX END ---
+
     // CRITICAL: Update state so Flag/Report buttons know which question to target
     state.currentQuestion = data.q;
 
@@ -637,7 +647,7 @@ window.reviewMove = function(idx) {
     const reportBtn = document.getElementById('report-btn');
     if(reportBtn) reportBtn.classList.remove('hidden');
 
-    // Render Options (same as before)
+    // Render Options
     const cont = document.getElementById('options-container');
     if(cont) {
         cont.innerHTML = '';
@@ -689,8 +699,6 @@ window.reviewMove = function(idx) {
          if(card) card.classList.remove('scale-95');
          // Re-render badge in new location
          renderQuestionModal(data.q);
-         // Re-apply options because renderQuestionModal overwrites them
-         // (Recursion avoidance: we just call renderQuestionModal to fix the header, then we let the logic above handle options)
     }, 10);
     
     if(window.lucide) lucide.createIcons();
@@ -709,6 +717,13 @@ window.closeReviewModal = function() {
         }
         window.isReviewingHistory = false; // Reset flag
         
+        // --- FIX START: Restore the live question ---
+        if (state.suspendedQuestion) {
+            state.currentQuestion = state.suspendedQuestion;
+            state.suspendedQuestion = null; // Clear the backup
+        }
+        // --- FIX END ---
+
         // B. CHECK: Is there an active game we should return to?
         if (state.gameActive && state.currentQuestion) {
             // Don't close the modal! Instead, switch the content back to the live question.
@@ -718,7 +733,9 @@ window.closeReviewModal = function() {
             // we need to restore the "Result View" (Green/Red buttons)
             if (state.currentResult) {
                 const isCorrect = state.currentResult === 'correct';
-                updateAnswerUI(state.currentSelection, state.currentQuestion, isCorrect);
+                // If it was a typed answer (input mode), pass the string, otherwise pass index
+                const selection = state.currentSelection;
+                updateAnswerUI(selection, state.currentQuestion, isCorrect);
             }
             
             // Ensure interactive buttons are visible again
@@ -730,7 +747,7 @@ window.closeReviewModal = function() {
             return; // Exit here, keeping the modal OPEN with game content
         }
 
-        // C. If no game is active (e.g. reviewing after game over), THEN hide the modal
+        // ... (keep the rest of the function logic) ...
         const modal = document.getElementById('question-modal');
         const card = document.getElementById('question-card');
         if(card) card.classList.add('scale-95');
@@ -744,9 +761,7 @@ window.closeReviewModal = function() {
         return;
     }
 
-    // 2. Standard Behavior (Closing the modal normally, e.g. clicking X during a game)
-    // Usually we don't allow closing the modal mid-game unless it's to go back to menu, 
-    // but if you have logic for that, keep it standard:
+    // 2. Standard Behavior
     const card = document.getElementById('question-card');
     if(card) card.classList.add('scale-95');
     setTimeout(() => {
