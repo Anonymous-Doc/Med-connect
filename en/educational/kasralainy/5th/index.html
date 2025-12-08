@@ -11,7 +11,7 @@
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="../../../icon.png"> 
+    <link rel="icon" type="image/png" href="../../../../icon.png"> 
     <title>Triviadox</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -318,27 +318,39 @@
                 <span class="text-sm font-black text-green-400 font-mono" id="live-accuracy-text">100%</span>
             </div>
 
-            <div class="bg-slate-800/50 p-3 border-b border-slate-800 flex justify-between items-center shrink-0 relative">
-                <div class="flex items-center gap-2 title-container relative z-10">
-                    <span class="w-1.5 h-4 bg-medical-500 rounded-full"></span>
-                    <span id="modal-title" class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Clinical Case</span>
-                </div>
-                <div class="flex items-center gap-2 relative z-10">
-                    <button onclick="toggleSidebar()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 transition-colors border border-slate-700 shadow-sm">
-                        <i data-lucide="menu" class="w-4 h-4"></i>
-                    </button>
-                    <button id="report-btn" onclick="reportCurrentQuestion()" title="Report Question" class="p-2 rounded-full text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-                    </button>
-                    <button id="flag-btn" onclick="toggleFlagCurrentQuestion()" class="p-2 rounded-full text-slate-500 hover:text-medical-400 hover:bg-medical-500/10 transition-colors">
-                        <i data-lucide="bookmark" class="w-4 h-4"></i>
-                    </button>
-                    <div id="q-player-badge" class="px-3 py-1 rounded-full text-[10px] font-bold bg-slate-700 text-slate-200 hidden">Player</div>
-                    <button id="close-review-btn" onclick="closeReviewModal()" class="hidden p-2 rounded-full hover:bg-slate-700 text-slate-400 transition-colors">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
+<div class="bg-slate-800/50 p-3 border-b border-slate-800 flex justify-between items-center shrink-0 relative h-14">
+    
+    <div class="flex items-center gap-3 relative z-20">
+        <button onclick="toggleSidebar()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 transition-colors border border-slate-700 shadow-sm">
+            <i data-lucide="menu" class="w-4 h-4"></i>
+        </button>
+        <div class="flex items-center gap-2 title-container">
+            <span class="w-1.5 h-4 bg-medical-500 rounded-full"></span>
+            <span id="modal-title" class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Review</span>
+        </div>
+    </div>
+
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        <div class="pointer-events-auto flex items-center gap-2" id="middle-header-tools">
             </div>
+    </div>
+
+    <div class="flex items-center gap-2 relative z-20">
+        <div id="q-player-badge" class="hidden px-3 py-1 rounded-full text-[10px] font-bold bg-slate-700 text-slate-200">Player</div>
+        
+        <button id="report-btn" onclick="reportCurrentQuestion()" title="Report Question" class="mr-3 p-1.5 rounded-full text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors border border-transparent hover:border-red-500/20">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+        </button>
+
+        <button id="flag-btn" onclick="toggleFlagCurrentQuestion()" class="p-1.5 rounded-full text-slate-500 hover:text-medical-400 hover:bg-medical-500/10 transition-colors border border-transparent hover:border-medical-500/20">
+            <i data-lucide="bookmark" class="w-4 h-4"></i>
+        </button>
+        
+        <button id="close-review-btn" onclick="closeReviewModal()" class="hidden p-1.5 rounded-full hover:bg-slate-700 text-slate-400 transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+    </div>
+</div>
 
             <div class="p-6 overflow-y-auto custom-scrollbar relative z-10 flex-1 flex flex-col justify-center">
                 

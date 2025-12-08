@@ -81,23 +81,18 @@ window.renderOptions = function(question) {
 window.renderQuestionModal = function(question) {
     const modal = document.getElementById('question-modal');
     if(!modal) return;
-    
-    // 1. Get the topic info
+
+    // --- 1. SETUP HEADER & TOPIC INFO ---
     let topicInfo = resolveTopic(question);
     
-    // --- CRITICAL FIX: SAFETY CHECK ---
-    // If the game thinks this is MCQ (default) but the question has NO options (like a Riddle),
-    // we FORCE it to be 'input' mode so the text box appears.
+    // Safety Check: Force Input mode if MCQ has no options
     if (topicInfo.mode === 'mcq' && (!question.options || !Array.isArray(question.options) || question.options.length === 0)) {
         topicInfo.mode = 'input';
-        
-        // Optional: Force the "Riddle" styling/label if it fell back to General
         if(topicInfo.label === 'General' || topicInfo.label === 'عام') {
              topicInfo.label = state.lang === 'ar' ? 'لغز' : 'Riddle';
              topicInfo.color = 'bg-pink-500';
         }
     }
-    // ----------------------------------
 
     let title = state.lang === 'ar' ? (topicInfo.labelAr || topicInfo.label) : topicInfo.label;
     let pillClass = topicInfo.color;
@@ -113,27 +108,30 @@ window.renderQuestionModal = function(question) {
         else pillClass = "bg-red-500";
     }
     
+    // --- 2. UPDATE HEADER UI ---
+    
+    // A. Title (Left)
     const titleElement = document.getElementById('modal-title');
-    if(!titleElement) return;
-    
-    const toolsBar = titleElement.closest('.flex.justify-between'); 
-    
-    if(toolsBar) {
-        toolsBar.classList.add('relative');
-        const existingBadge = toolsBar.querySelector('.difficulty-badge');
-        if (existingBadge) existingBadge.remove();
+    if(titleElement) {
+        const titleContainer = titleElement.parentNode; 
+        if(titleContainer) {
+            titleContainer.innerHTML = `
+                <span class="w-1.5 h-4 ${pillClass} rounded-full"></span>
+                <span id="modal-title" class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">${title}</span>
+            `;
+        }
+    }
 
-        const titleContainer = titleElement.parentNode;
-        titleContainer.className = "flex items-center gap-2 title-container relative z-10";
-        titleContainer.innerHTML = `
-            <span class="w-1 h-3 ${pillClass} rounded-full"></span>
-            <span id="modal-title" class="text-[9px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">${title}</span>
-        `;
+    // B. Middle Tools (Difficulty Badge ONLY)
+    const middleTools = document.getElementById('middle-header-tools');
+    if(middleTools) {
+        // Clear old badge
+        const existingBadge = middleTools.querySelector('.difficulty-badge-static');
+        if (existingBadge) existingBadge.remove();
 
         if (question.difficulty) {
             let diffText = state.lang === 'ar' ? "متوسط" : "MEDIUM";
             let diffClass = "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800";
-            
             const diff = parseInt(question.difficulty);
             if (diff === 1) {
                 diffText = state.lang === 'ar' ? "سهل" : "EASY";
@@ -142,95 +140,93 @@ window.renderQuestionModal = function(question) {
                 diffText = state.lang === 'ar' ? "صعب" : "HARD";
                 diffClass = "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800";
             }
-            
-            const badgeHTML = `
-                <div class="difficulty-badge absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                    <span class="px-3 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-widest shadow-sm ${diffClass}">
-                        ${diffText}
-                    </span>
-                </div>
-            `;
-            toolsBar.insertAdjacentHTML('afterbegin', badgeHTML);
+            const badgeHTML = `<span class="difficulty-badge-static px-3 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-widest shadow-sm ${diffClass}">${diffText}</span>`;
+            middleTools.innerHTML = badgeHTML; // Set directly to ensure clean state
         }
     }
 
-    // Report Button Logic
-    const actionContainer = document.querySelector('.flex.items-center.gap-2:not(.title-container)');
-    if(actionContainer) {
-        const oldReportBtn = document.getElementById('report-btn');
-        if(oldReportBtn) oldReportBtn.remove();
-
+    // C. Report Button Logic (Targeting global ID since it moved to right)
+    const reportBtn = document.getElementById('report-btn');
+    if(reportBtn) {
         const isReported = isQuestionReported(question.id);
-        let reportBtnHTML;
-
         if (isReported) {
-             reportBtnHTML = `<button id="report-btn" disabled class="p-1.5 rounded-full text-green-500 cursor-not-allowed" title="${getText('reported')}"><i data-lucide="check" class="w-3 h-3"></i></button>`;
+                reportBtn.disabled = true;
+                reportBtn.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-green-500"></i>`;
+                reportBtn.classList.add('cursor-not-allowed', 'opacity-50');
+                reportBtn.classList.remove('hover:bg-red-500/10', 'hover:text-red-400');
         } else {
-             reportBtnHTML = `<button id="report-btn" onclick="reportCurrentQuestion()" title="${getText('reportQ')}" class="p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><i data-lucide="alert-triangle" class="w-3 h-3"></i></button>`;
+                reportBtn.disabled = false;
+                reportBtn.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3"></i>`;
+                reportBtn.classList.remove('cursor-not-allowed', 'opacity-50');
+                reportBtn.classList.add('hover:bg-red-500/10', 'hover:text-red-400');
         }
-
-        const flagBtn = document.getElementById('flag-btn');
-        if(flagBtn) flagBtn.insertAdjacentHTML('afterend', reportBtnHTML);
     }
 
-    const optsContainer = document.getElementById('options-container');
-    const pollChart = document.getElementById('poll-chart');
-    if(pollChart) pollChart.classList.add('hidden');
-    
-    if(optsContainer) {
-        optsContainer.innerHTML = '';
-        const alreadyAnswered = state.currentResult !== null;
+    // --- 3. RENDER CONTENT (GUARDED) ---
+    // Does not overwrite body if in Review History mode
+    if (!window.isReviewingHistory) {
+        const optsContainer = document.getElementById('options-container');
+        const pollChart = document.getElementById('poll-chart');
+        if(pollChart) pollChart.classList.add('hidden');
         
-        // --- INPUT MODE RENDERING ---
-        if (topicInfo.mode === 'input' && !alreadyAnswered) {
-            const inputContainer = document.createElement('div');
-            inputContainer.className = "flex flex-col gap-3 animate-fade-in";
+        if(optsContainer) {
+            optsContainer.innerHTML = '';
+            const alreadyAnswered = state.currentResult !== null;
             
-            const input = document.createElement('input');
-            input.type = "text";
-            input.placeholder = getText('typeAnswer');
-            input.className = `w-full p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-sm focus:border-medical-500 focus:ring-2 focus:ring-medical-200 dark:focus:ring-medical-900/30 outline-none transition-all ${state.lang === 'ar' ? 'text-right' : 'text-left'}`;
-            input.id = "riddle-input";
-            input.autocomplete = "off";
-            input.onkeypress = (e) => { if(e.key === 'Enter') submitTypedAnswer(question); };
-            
-            const submitBtn = document.createElement('button');
-            submitBtn.className = "w-full py-3 rounded-xl bg-medical-600 hover:bg-medical-700 text-white font-bold text-sm shadow-lg shadow-medical-500/30 transition-all flex items-center justify-center gap-2";
-            submitBtn.innerHTML = `<span>${getText('submit')}</span><i data-lucide="send" class="w-4 h-4 ${state.lang==='ar'?'rotate-180':''}"></i>`;
-            submitBtn.onclick = () => submitTypedAnswer(question);
+            if (topicInfo.mode === 'input' && !alreadyAnswered) {
+                // Input Mode
+                const inputContainer = document.createElement('div');
+                inputContainer.className = "flex flex-col gap-3 animate-fade-in";
+                
+                const input = document.createElement('input');
+                input.type = "text";
+                input.placeholder = getText('typeAnswer');
+                input.className = `w-full p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-sm focus:border-medical-500 focus:ring-2 focus:ring-medical-200 dark:focus:ring-medical-900/30 outline-none transition-all ${state.lang === 'ar' ? 'text-right' : 'text-left'}`;
+                input.id = "riddle-input";
+                input.autocomplete = "off";
+                input.onkeypress = (e) => { if(e.key === 'Enter') submitTypedAnswer(question); };
+                
+                const submitBtn = document.createElement('button');
+                submitBtn.className = "w-full py-3 rounded-xl bg-medical-600 hover:bg-medical-700 text-white font-bold text-sm shadow-lg shadow-medical-500/30 transition-all flex items-center justify-center gap-2";
+                submitBtn.innerHTML = `<span>${getText('submit')}</span><i data-lucide="send" class="w-4 h-4 ${state.lang==='ar'?'rotate-180':''}"></i>`;
+                submitBtn.onclick = () => submitTypedAnswer(question);
 
-            const giveUpBtn = document.createElement('button');
-            giveUpBtn.className = "text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-bold underline decoration-dotted transition-colors mt-1";
-            giveUpBtn.innerText = getText('giveUp');
-            giveUpBtn.onclick = () => { 
-                // This will trigger the "Wrong Answer" state, which now has the "Mark Correct" button
-                submitAnswer(null, question); 
-            };
+                const giveUpBtn = document.createElement('button');
+                giveUpBtn.className = "text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-bold underline decoration-dotted transition-colors mt-1";
+                giveUpBtn.innerText = getText('giveUp');
+                giveUpBtn.onclick = () => { submitAnswer(null, question); };
 
-            inputContainer.appendChild(input);
-            inputContainer.appendChild(submitBtn);
-            inputContainer.appendChild(giveUpBtn);
-            
-            optsContainer.appendChild(inputContainer); 
-            setTimeout(() => { if(document.getElementById('riddle-input')) document.getElementById('riddle-input').focus(); }, 100);
-        } else {
-            // MCQ or already answered
-            if (topicInfo.mode === 'input' && alreadyAnswered) {
-                 updateAnswerUI(state.currentSelection, question, state.currentResult === 'correct');
+                inputContainer.appendChild(input);
+                inputContainer.appendChild(submitBtn);
+                inputContainer.appendChild(giveUpBtn);
+                optsContainer.appendChild(inputContainer); 
+                setTimeout(() => { if(document.getElementById('riddle-input')) document.getElementById('riddle-input').focus(); }, 100);
             } else {
-                renderOptions(question);
+                // MCQ Mode
+                if (topicInfo.mode === 'input' && alreadyAnswered) {
+                     updateAnswerUI(state.currentSelection, question, state.currentResult === 'correct');
+                } else {
+                    renderOptions(question);
+                }
             }
         }
     }
 
-    // Stats and Badges Visibility Logic
+    // --- 4. FOOTER & STATE UPDATES ---
+    updateFlagButtonState(question.id);
+
     const liveStats = document.getElementById('solo-live-stats');
     const finishBtn = document.getElementById('finish-session-container');
     const qPlayerBadge = document.getElementById('q-player-badge');
     const lifelinesContainer = document.getElementById('lifelines-container');
 
     if (liveStats && finishBtn && qPlayerBadge && lifelinesContainer) {
-        if(state.gameMode === 'solo') {
+        if(window.isReviewingHistory) {
+             liveStats.classList.add('hidden');
+             finishBtn.classList.add('hidden');
+             lifelinesContainer.classList.add('hidden');
+             qPlayerBadge.classList.add('hidden');
+        } else if(state.gameMode === 'solo') {
             qPlayerBadge.classList.add('hidden');
             liveStats.classList.remove('hidden');
             liveStats.classList.add('flex');
@@ -248,10 +244,8 @@ window.renderQuestionModal = function(question) {
             finishBtn.classList.add('hidden');
             lifelinesContainer.classList.remove('hidden');
             lifelinesContainer.classList.add('flex');
-            
-            if (topicInfo.mode === 'input') {
-                lifelinesContainer.classList.add('hidden'); 
-            } else {
+            if (topicInfo.mode === 'input') lifelinesContainer.classList.add('hidden'); 
+            else {
                 document.getElementById('lifeline-5050').disabled = !state.lifelines['5050'];
                 document.getElementById('lifeline-poll').disabled = !state.lifelines['poll'];
                 document.getElementById('lifeline-consult').disabled = !state.lifelines['consult'];
@@ -263,9 +257,10 @@ window.renderQuestionModal = function(question) {
             liveStats.classList.add('hidden');
             finishBtn.classList.add('hidden');
             lifelinesContainer.classList.add('hidden');
-            document.getElementById('q-player-badge').innerText = `${player.name}`;
-            document.getElementById('q-player-badge').className = `px-2 py-0.5 rounded-full text-[9px] font-bold ${player.bgLight} ${player.textClass}`;
-            
+            if (player) {
+                document.getElementById('q-player-badge').innerText = `${player.name}`;
+                document.getElementById('q-player-badge').className = `px-2 py-0.5 rounded-full text-[9px] font-bold ${player.bgLight} ${player.textClass}`;
+            }
             if (state.gameMode === 'points' && state.isStealMode) {
                  document.getElementById('q-player-badge').classList.add('ring-2', 'ring-red-500');
                  document.getElementById('q-player-badge').innerText += ` (${getText('stealChance')})`;
@@ -273,11 +268,9 @@ window.renderQuestionModal = function(question) {
         }
     }
 
-    updateFlagButtonState(question.id);
-
     const closeRev = document.getElementById('close-review-btn');
-    if(closeRev) closeRev.classList.add('hidden');
-    
+    if(closeRev && !window.isReviewingHistory) closeRev.classList.add('hidden');
+
     const qText = document.getElementById('question-text');
     if(qText) {
         qText.innerText = question.q;
@@ -596,37 +589,37 @@ window.reviewMove = function(idx) {
     const modal = document.getElementById('question-modal');
     if(!modal) return;
 
-    // --- MARKER: REMEMBER WE CAME FROM HISTORY ---
     window.isReviewingHistory = true;
 
-    // --- FORCE CLOSE SIDEBAR (To view question) ---
+    // CRITICAL: Update state so Flag/Report buttons know which question to target
+    state.currentQuestion = data.q;
+
+    // Force Close Sidebar
     const sidebar = document.getElementById('sidebar');
     if (sidebar) {
         const isRTL = state.lang === 'ar';
         const hiddenClass = isRTL ? 'translate-x-full' : '-translate-x-full';
-        // If sidebar is open (doesn't have hidden class), close it
         if (!sidebar.classList.contains(hiddenClass)) {
             sidebar.classList.add(hiddenClass);
             state.isSidebarOpen = false;
         }
     }
 
-    // 1. Prepare Modal
     const titleEl = document.getElementById('modal-title');
     if(titleEl) titleEl.innerText = "Review";
     
-    // 2. Hide Gameplay Elements
+    // Hide Gameplay Elements
     const elementsToHide = ['q-player-badge', 'solo-live-stats', 'finish-session-container', 'lifelines-container', 'poll-chart', 'next-action-container'];
     elementsToHide.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.classList.add('hidden');
     });
 
-    // 3. Show Close Button
+    // Show Close Button
     const closeBtn = document.getElementById('close-review-btn');
     if(closeBtn) closeBtn.classList.remove('hidden');
     
-    // 4. Set Question Text
+    // Set Question Text
     const qText = document.getElementById('question-text');
     if(qText) {
         qText.innerText = data.q.q;
@@ -634,13 +627,17 @@ window.reviewMove = function(idx) {
         else qText.classList.remove('text-right');
     }
 
-    // 5. Hide Interactive Buttons
+    // --- ENABLE BUTTONS FOR REVIEW ---
+    // Ensure they are visible and updated
     const flagBtn = document.getElementById('flag-btn');
-    if(flagBtn) flagBtn.classList.add('hidden');
+    if(flagBtn) {
+        flagBtn.classList.remove('hidden');
+        updateFlagButtonState(data.q.id); // Update icon (filled/unfilled)
+    }
     const reportBtn = document.getElementById('report-btn');
-    if(reportBtn) reportBtn.classList.add('hidden');
+    if(reportBtn) reportBtn.classList.remove('hidden');
 
-    // 6. Render Options with SOLID CIRCLES
+    // Render Options (same as before)
     const cont = document.getElementById('options-container');
     if(cont) {
         cont.innerHTML = '';
@@ -650,19 +647,15 @@ window.reviewMove = function(idx) {
                 const alignClass = state.lang === 'ar' ? 'text-right' : 'text-left';
                 let cls = `w-full ${alignClass} p-2 rounded-lg border-2 transition-colors flex items-center gap-2 cursor-default `;
                 
-                // DEFAULT ICON (Grey)
                 let icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold">${String.fromCharCode(65+i)}</span>`;
                 
                 if(i === data.q.correct) {
-                    // CORRECT: Green Border + Solid Green Circle + White Check
                     cls += "border-green-500 bg-green-50 dark:bg-green-900/30";
                     icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-green-500 text-white"><i data-lucide="check" class="w-3 h-3 text-white"></i></span>`;
                 } else if(i === data.idx && !data.correct) {
-                    // WRONG: Red Border + Solid Red Circle + White X
                     cls += "border-red-500 bg-red-50 dark:bg-red-900/30";
                     icon = `<span class="w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white"><i data-lucide="x" class="w-3 h-3 text-white"></i></span>`;
                 } else {
-                    // OTHER: Faded
                     cls += "border-slate-200 dark:border-slate-700 opacity-60"; 
                 }
                 
@@ -671,7 +664,7 @@ window.reviewMove = function(idx) {
                 cont.appendChild(btn);
             });
         } else {
-            // Input Mode logic...
+            // Input Mode logic
             const result = document.createElement('div');
             result.className = "flex flex-col gap-2 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700";
             const userAns = data.idx ? data.idx : "(Gave up)";
@@ -694,6 +687,10 @@ window.reviewMove = function(idx) {
     setTimeout(() => {
          const card = document.getElementById('question-card');
          if(card) card.classList.remove('scale-95');
+         // Re-render badge in new location
+         renderQuestionModal(data.q);
+         // Re-apply options because renderQuestionModal overwrites them
+         // (Recursion avoidance: we just call renderQuestionModal to fix the header, then we let the logic above handle options)
     }, 10);
     
     if(window.lucide) lucide.createIcons();
@@ -984,12 +981,15 @@ window.openPersistentQuestion = function(item) {
     const modal = document.getElementById('question-modal');
     if(!modal) return;
     
+    // CRITICAL: Update state
+    state.currentQuestion = item.q;
+    
     renderQuestionModal(item.q);
     
     const title = document.getElementById('modal-title');
     if(title) title.innerText = state.reviewTab === 'mistakes' ? getText('mistakes') : getText('flagged');
     
-    const ids = ['solo-live-stats', 'lifelines-container', 'next-action-container'];
+    const ids = ['solo-live-stats', 'lifelines-container', 'next-action-container', 'q-player-badge'];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.classList.add('hidden');
@@ -998,11 +998,14 @@ window.openPersistentQuestion = function(item) {
     const closeBtn = document.getElementById('close-review-btn');
     if(closeBtn) closeBtn.classList.remove('hidden');
     
-    // Hide interactive buttons in review mode from history
+    // --- ENABLE BUTTONS ---
     const flagBtn = document.getElementById('flag-btn');
-    if(flagBtn) flagBtn.classList.add('hidden');
+    if(flagBtn) {
+        flagBtn.classList.remove('hidden');
+        updateFlagButtonState(item.q.id);
+    }
     const reportBtn = document.getElementById('report-btn');
-    if(reportBtn) reportBtn.classList.add('hidden');
+    if(reportBtn) reportBtn.classList.remove('hidden');
     
     updateAnswerUI(item.userIdx, item.q, false); 
     
