@@ -291,13 +291,28 @@ window.renderQuestionModal = function(question) {
 };
 
 window.reportCurrentQuestion = function() {
-    if(!state.currentQuestion) return;
+if(!state.currentQuestion) return;
     
     const btn = document.getElementById('report-btn');
     if(btn.disabled) return;
 
     const qId = state.currentQuestion.id;
+    const qText = state.currentQuestion.q;
+    const options = state.currentQuestion.options; 
+    const correctIdx = state.currentQuestion.correct;
     
+    // Determine the correct answer string (Logic remains the same)
+    let correctAnswerText = "N/A (Riddle or Error)";
+    if (options && typeof correctIdx === 'number' && correctIdx < options.length) {
+        correctAnswerText = options[correctIdx];
+    } else if (state.currentQuestion.correct && typeof state.currentQuestion.correct === 'string') {
+        correctAnswerText = state.currentQuestion.correct;
+    }
+    
+    // Format options for the spreadsheet (e.g., as a comma-separated string)
+    const formattedOptions = options ? options.join(' | ') : 'N/A';
+    // --- END OF NEW CODE ---
+
     // Set UI to loading state
     btn.disabled = true;
     btn.classList.add('opacity-50', 'cursor-not-allowed', 'animate-pulse');
@@ -306,15 +321,31 @@ window.reportCurrentQuestion = function() {
     lucide.createIcons();
 
     // Prepare Data
-    const date = new Date();
-    // Format: 2025-12-4 (10:47)
+const date = new Date();
     const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} (${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')})`;
     
     const payload = {
         "ID": qId,
         "Date": formattedDate,
-        "Topic": state.selectedTopics.join(', ')
+        "Topic": state.selectedTopics.join(', '),
+        "Question": qText,
+        // *** START OF MODIFIED OPTION LOGIC ***
     };
+
+    // Dynamically add a column for each option
+    if (options && Array.isArray(options)) {
+        options.forEach((opt, index) => {
+            const optionKey = `Option ${String.fromCharCode(65 + index)}`; // e.g., "Option A", "Option B"
+            payload[optionKey] = opt;
+        });
+    }
+    
+    // Add the correct answer details
+    payload["Correct Answer Text"] = correctAnswerText;
+    // If you also want the index of the correct option for MCQs:
+    if (typeof correctIdx === 'number') {
+         payload["Correct Index"] = String.fromCharCode(65 + correctIdx); // e.g., "A", "B"
+    }
 
     // Send to SheetBest API
     fetch('https://api.sheetbest.com/sheets/170cc9a8-108c-4a7b-8bd1-c2fca1f24004', {
