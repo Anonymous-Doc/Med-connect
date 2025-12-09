@@ -291,7 +291,7 @@ window.renderQuestionModal = function(question) {
 };
 
 window.reportCurrentQuestion = function() {
-if(!state.currentQuestion) return;
+    if(!state.currentQuestion) return;
     
     const btn = document.getElementById('report-btn');
     if(btn.disabled) return;
@@ -301,7 +301,7 @@ if(!state.currentQuestion) return;
     const options = state.currentQuestion.options; 
     const correctIdx = state.currentQuestion.correct;
     
-    // Determine the correct answer string (Logic remains the same)
+    // Determine the correct answer string (for both MCQ index and Riddle string)
     let correctAnswerText = "N/A (Riddle or Error)";
     if (options && typeof correctIdx === 'number' && correctIdx < options.length) {
         correctAnswerText = options[correctIdx];
@@ -309,19 +309,16 @@ if(!state.currentQuestion) return;
         correctAnswerText = state.currentQuestion.correct;
     }
     
-    // Format options for the spreadsheet (e.g., as a comma-separated string)
-    const formattedOptions = options ? options.join(' | ') : 'N/A';
-    // --- END OF NEW CODE ---
-
     // Set UI to loading state
     btn.disabled = true;
     btn.classList.add('opacity-50', 'cursor-not-allowed', 'animate-pulse');
-    btn.classList.remove('hover:text-red-500', 'hover:bg-red-50', 'dark:hover:bg-red-900/20');
+    btn.classList.remove('hover:text-red-500/10', 'hover:text-red-400');
     btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i>`;
     lucide.createIcons();
 
     // Prepare Data
-const date = new Date();
+    const date = new Date();
+    // Format: 2025-12-4 (10:47)
     const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} (${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')})`;
     
     const payload = {
@@ -329,22 +326,20 @@ const date = new Date();
         "Date": formattedDate,
         "Topic": state.selectedTopics.join(', '),
         "Question": qText,
-        // *** START OF MODIFIED OPTION LOGIC ***
+        "Correct Answer Text": correctAnswerText,
     };
-
-    // Dynamically add a column for each option
+    
+    // Dynamically add a column for each option (e.g., "Option A", "Option B")
     if (options && Array.isArray(options)) {
         options.forEach((opt, index) => {
-            const optionKey = `Option ${String.fromCharCode(65 + index)}`; // e.g., "Option A", "Option B"
+            const optionKey = `Option ${String.fromCharCode(65 + index)}`; 
             payload[optionKey] = opt;
         });
     }
-    
-    // Add the correct answer details
-    payload["Correct Answer Text"] = correctAnswerText;
+
     // If you also want the index of the correct option for MCQs:
     if (typeof correctIdx === 'number') {
-         payload["Correct Index"] = String.fromCharCode(65 + correctIdx); // e.g., "A", "B"
+         payload["Correct Index"] = String.fromCharCode(65 + correctIdx);
     }
 
     // Send to SheetBest API
@@ -373,7 +368,7 @@ const date = new Date();
         // Reset button on failure so user can try again if it was a network glitch
         btn.disabled = false;
         btn.classList.remove('opacity-50', 'cursor-not-allowed', 'animate-pulse');
-        btn.classList.add('hover:text-red-500', 'hover:bg-red-50', 'dark:hover:bg-red-900/20');
+        btn.classList.add('hover:text-red-500/10', 'hover:text-red-400');
         btn.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3"></i>`;
     })
     .finally(() => {
