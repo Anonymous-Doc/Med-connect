@@ -366,7 +366,7 @@
 {"id": "surgery_00368", "q": "The etiology of bed sores is mainly :", "options": ["ischemic", "neuropathic", "traumatic", "infective"], "correct": 0, "difficulty": 1},
 {"id": "surgery_00369", "q": "The commonest organism incriminated in hand infections is :", "options": ["bacteroides", "E.coli", "staphylococcus aureus", "streptococcus pyogenes"], "correct": 2, "difficulty": 1},
 {"id": "surgery_00370", "q": "Prolonged use of antibiotics will cause :", "options": ["chronic superficial glossitis", "Aphthous ulcer", "candida fungal glossitis", "leukoplakia"], "correct": 2, "difficulty": 1},
-{"id": "surgery_00371", "q": "Ingrowing toe nail is treated by:", "options": ["radiofrequency coagulation", "excision of the nail bed", "nail elevation with a piece of gauze", "nail window opration"], "correct": 1, "difficulty": 1},
+{"id": "surgery_00371", "q": "Ingrowing toe nail is treated by:", "options": ["radiofrequency coagulation", "excision of the nail bed", "nail elevation with a piece of gauze", "nail window opration"], "correct": 2, "difficulty": 1},
 {"id": "surgery_00372", "q": "Which of the following is a non-specific immunotherapy used in cancer treatment?", "options": ["BCG", "tetanus toxoid", "thyroxin", "cyclophosphamide"], "correct": 0, "difficulty": 1},
 {"id": "surgery_00373", "q": "Which of these bacteria secrete coagulase enzyme ?", "options": ["staphylococci", "streptococci", "E.coli", "Klebsiella"], "correct": 0, "difficulty": 1},
 {"id": "surgery_00374", "q": "Road traffic accidents usually cause this type of injury", "options": ["low velocity", "high velocity", "blunt", "Penetrating"], "correct": 2, "difficulty": 1},
