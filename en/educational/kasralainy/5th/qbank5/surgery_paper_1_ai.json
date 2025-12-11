@@ -223,7 +223,7 @@
 {"id": "surgery_08518", "q": "Rutherford Class I acute ischemia is:", "options": ["Immediately threatened", "Semi-elective/no immediate threat", "Marginally threatened", "Potentially unsalvageable"], "correct": 1, "difficulty": 1},
 {"id": "surgery_08519", "q": "Which Rutherford class requires immediate revascularization with no time for thrombolysis?", "options": ["Class I", "Class IIA", "Class IIB", "Class III"], "correct": 2, "difficulty": 2},
 {"id": "surgery_08520", "q": "In acute thrombotic ischemia management Catheter-directed thrombolysis (CDT) is most appropriate for:", "options": ["Class I", "Class IIA", "Class IIB", "Class III"], "correct": 1, "difficulty": 2},
-{"id": "surgery_08521", "q": "Which thrombolytic agent may cause anaphylaxis?", "options": ["Urokinase", "Streptokinase", "Tissue plasminogen activator (TPA)", "All of the above"], "correct": 1, "difficulty": 1},
+{"id": "surgery_08521", "q": "Which thrombolytic agent may cause anaphylaxis?", "options": ["Urokinase", "Streptokinase", "Tissue plasminogen activator (TPA)", "All of the above"], "correct": 0, "difficulty": 1},
 {"id": "surgery_08522", "q": "The maintenance dose for direct thrombolysis is:", "options": ["2500 units/hour", "5000 units/hour", "7500 units/hour", "10000 units/hour"], "correct": 1, "difficulty": 1},
 {"id": "surgery_08523", "q": "Lytic therapy works best within how many days of thrombosis?", "options": ["7 days", "14 days", "21 days", "30 days"], "correct": 1, "difficulty": 1},
 {"id": "surgery_08524", "q": "Lytic therapy is contraindicated for how long after open vascular surgery?", "options": ["7 days", "14 days", "21 days", "30 days"], "correct": 1, "difficulty": 1},
